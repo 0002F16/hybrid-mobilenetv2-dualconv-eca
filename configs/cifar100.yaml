@@ -1,0 +1,22 @@
+# CIFAR-100 experiment configuration
+dataset: cifar100
+dataset_root: ./data
+
+# Model
+model: hybrid
+num_classes: 100
+width_multiplier: 1.0
+
+# Training
+batch_size: 64
+epochs: 200
+learning_rate: 0.1
+momentum: 0.9
+weight_decay: 5.0e-4
+
+# Scheduler (cosine annealing)
+scheduler: cosine
+
+# Reproducibility
+seed: 42
+num_workers: 4

@@ -1,0 +1,32 @@
+# Outputs
+outputs/checkpoints/*.pt
+outputs/logs/*
+outputs/figures/*
+!outputs/checkpoints/.gitkeep
+!outputs/logs/.gitkeep
+!outputs/figures/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data (large downloads)
+data/cifar-10-batches-py/
+data/cifar-100-python/
+data/tiny-imagenet-200/
+data/*.tar.gz
+
+# Jupyter
+.ipynb_checkpoints/
