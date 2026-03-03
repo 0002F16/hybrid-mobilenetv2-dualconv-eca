@@ -14,6 +14,17 @@ learning_rate: 0.1
 momentum: 0.9
 weight_decay: 5.0e-4
 
+# Validation and logging cadence
+val_interval_epochs: 1
+summary_log_interval_epochs: 10
+
+# Early stopping (validation Top-1 accuracy, percentage points)
+early_stopping:
+  enabled: true
+  warmup_epochs: 30
+  patience_epochs: 20
+  min_delta_pp: 0.1
+
 # Scheduler (cosine annealing)
 scheduler: cosine
 

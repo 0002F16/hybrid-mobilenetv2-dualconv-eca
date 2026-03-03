@@ -51,8 +51,26 @@ python experiments/train_cifar10.py --config configs/cifar100.yaml
 python experiments/run_all.py
 ```
 
+## Smoke test (no real training)
+
+Run a single synthetic batch through model + loss + backward + optimizer step:
+
+```bash
+python training/smoke_test.py --config configs/cifar10.yaml
+```
+
+Training policy (config-driven):
+
+- Max epochs: CIFAR-10 = 150, CIFAR-100 = 200, Tiny-ImageNet = 100
+- Validation: every epoch
+- Summary logging: every 10 epochs
+- Early stopping monitor: validation Top-1 accuracy
+- Early stopping rules: warm-up = 30 epochs, patience = 20 epochs, minimum improvement = 0.1 percentage points
+- Training stops early only when the patience rule is met after warm-up, otherwise it runs until the dataset-specific epoch ceiling
+
 ## Datasets
 
 - **CIFAR-10 / CIFAR-100**: Auto-downloaded to `./data`
 - **Tiny-ImageNet**: Set `dataset_root` in `configs/tiny_imagenet.yaml`
+
 # dualconv-eca-mobilenetv2

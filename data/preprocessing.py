@@ -1,18 +1,12 @@
-"""
-Data preprocessing pipeline for CIFAR-10, CIFAR-100, and Tiny-ImageNet.
-
-Supports reproducible experiments with configurable seeds, dataset-specific
-transforms, and 10% validation splits derived from the training set.
-"""
-
 import random
 import ssl
 
 # Fix SSL certificate verification on macOS (Python.org installs)
 try:
     import certifi
-    ssl._create_default_https_context = (
-        lambda: ssl.create_default_context(cafile=certifi.where())
+
+    ssl._create_default_https_context = lambda: ssl.create_default_context(
+        cafile=certifi.where()
     )
 except ImportError:
     pass
@@ -79,17 +73,21 @@ def get_transforms(dataset_name: str) -> Tuple[transforms.Compose, transforms.Co
             "Choose from 'cifar10', 'cifar100', or 'tiny_imagenet'."
         )
 
-    train_transform = transforms.Compose([
-        transforms.RandomCrop(crop_size, padding=4),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std),
-    ])
+    train_transform = transforms.Compose(
+        [
+            transforms.RandomCrop(crop_size, padding=4),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std),
+        ]
+    )
 
-    test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean, std),
-    ])
+    test_transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(mean, std),
+        ]
+    )
 
     return train_transform, test_transform
 
@@ -142,20 +140,25 @@ def get_cifar10_loaders(
     train_transform, test_transform = get_transforms("cifar10")
 
     full_train = CIFAR10(root=root, train=True, download=True, transform=None)
-    test_dataset = CIFAR10(root=root, train=False, download=True, transform=test_transform)
+    test_dataset = CIFAR10(
+        root=root, train=False, download=True, transform=test_transform
+    )
 
     n_train = len(full_train)
     n_val = int(0.1 * n_train)
     n_train_split = n_train - n_val
 
     train_subset, val_subset = random_split(
-        full_train, [n_train_split, n_val],
+        full_train,
+        [n_train_split, n_val],
         generator=torch.Generator().manual_seed(seed),
     )
     train_dataset = _TransformSubset(train_subset, train_transform)
     val_dataset = _TransformSubset(val_subset, test_transform)
 
-    print(f"CIFAR-10 - Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
+    print(
+        f"CIFAR-10 - Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}"
+    )
 
     train_loader = DataLoader(
         train_dataset,
@@ -209,20 +212,25 @@ def get_cifar100_loaders(
     train_transform, test_transform = get_transforms("cifar100")
 
     full_train = CIFAR100(root=root, train=True, download=True, transform=None)
-    test_dataset = CIFAR100(root=root, train=False, download=True, transform=test_transform)
+    test_dataset = CIFAR100(
+        root=root, train=False, download=True, transform=test_transform
+    )
 
     n_train = len(full_train)
     n_val = int(0.1 * n_train)
     n_train_split = n_train - n_val
 
     train_subset, val_subset = random_split(
-        full_train, [n_train_split, n_val],
+        full_train,
+        [n_train_split, n_val],
         generator=torch.Generator().manual_seed(seed),
     )
     train_dataset = _TransformSubset(train_subset, train_transform)
     val_dataset = _TransformSubset(val_subset, test_transform)
 
-    print(f"CIFAR-100 - Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}")
+    print(
+        f"CIFAR-100 - Train: {len(train_dataset)}, Val: {len(val_dataset)}, Test: {len(test_dataset)}"
+    )
 
     train_loader = DataLoader(
         train_dataset,
@@ -267,6 +275,7 @@ class _TinyImageNetTestDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int]:
         from PIL import Image
+
         img_path = self.samples[idx]
         image = Image.open(img_path).convert("RGB")
         if self.transform:
@@ -313,7 +322,8 @@ def get_tiny_imagenet_loaders(
     n_train_split = n_train - n_val
 
     train_subset, val_subset = random_split(
-        full_train, [n_train_split, n_val],
+        full_train,
+        [n_train_split, n_val],
         generator=torch.Generator().manual_seed(seed),
     )
     train_dataset = _TransformSubset(train_subset, train_transform)
