@@ -73,6 +73,31 @@ Variants:
 | DualConv-B4B10 (`MobileNetV2DualConvB4B10`) | 2,069,562 | -7.47% | 20,393,728 | -20.20% | 8.0709 | -7.87% |
 | DualConv-B4B7 (`MobileNetV2DualConvB4B7`) | 2,192,058 | -2.00% | 22,353,664 | -12.53% | 8.5657 | -2.22% |
 
+## MobileNetV2-ECA (no DualConv)
+
+This repo also includes a **MobileNetV2-ECA only** variant (no DualConv), following:
+**“ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks” (Wang et al., 2020)**.
+
+Current configuration in this repo:
+- ECA is applied to **blocks B4..B10 only** (same replacement scope style as other variants).
+- ECA uses **adaptive kernel size** selection (Eq. 12 with \(\gamma=2\), \(b=1\)).
+
+Profiling script:
+- `scripts/profile_eca_variants.py`
+
+Command used:
+
+```powershell
+python scripts/profile_eca_variants.py --input_res 32 --small_input
+```
+
+### Summary table (input 1×3×32×32, width_mult=1.0)
+
+| Model | Params | Δ Params vs baseline | FLOPs | Δ FLOPs vs baseline | Model size (MB) | Δ Size vs baseline |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline (`MobileNetV2Baseline`) | 2,236,682 | +0.00% | 25,556,736 | +0.00% | 8.7601 | +0.00% |
+| ECA-only B4..B10 (`MobileNetV2ECAOnly`) | 2,236,711 | +0.00% | 25,568,544 | +0.05% | 8.7631 | +0.03% |
+
 ## How to run
 
 ### Install dependencies
@@ -101,5 +126,6 @@ Useful flags:
 
 ```powershell
 python scripts/profile_baseline.py --input_res 32 --small_input
+python scripts/profile_eca_variants.py --input_res 32 --small_input
 ```
 
