@@ -1,0 +1,130 @@
+<svg width="980" height="320" viewBox="0 0 980 320" xmlns="http://www.w3.org/2000/svg" style="background:#ffffff; font-family: Arial, sans-serif;">
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- ===== OUTER CONTAINER ===== -->
+<rect x="20" y="38" width="940" height="220" rx="12" fill="#F8F7F3" stroke="#5F5E5A" stroke-width="1"/>
+
+<!-- ===== MODIFICATION ZONE shading (B4–B10 only) ===== -->
+<!-- B4-B6: x=348..428, B7-B10: x=440..520. Zone: x=338 to x=528, width=190 -->
+<rect x="338" y="44" width="190" height="208" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1.2" stroke-dasharray="6 3"/>
+<text x="433" y="60" text-anchor="middle" font-size="10" font-weight="600" fill="#085041">Modification zone: B4–B10</text>
+<text x="433" y="72" text-anchor="middle" font-size="10" fill="#085041">(DualConv / ECA / Hybrid)</text>
+
+<!-- ===== ROW 1: blocks ===== -->
+
+<!-- Stem -->
+<rect x="30" y="82" width="90" height="64" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="75" y="103" text-anchor="middle" font-size="11" font-weight="600" fill="#2C2C2A">Stem</text>
+<text x="75" y="118" text-anchor="middle" font-size="10" fill="#5F5E5A">3×3 conv</text>
+<text x="75" y="132" text-anchor="middle" font-size="10" fill="#5F5E5A">32 ch</text>
+
+<!-- B1 -->
+<rect x="132" y="82" width="68" height="64" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.8"/>
+<text x="166" y="103" text-anchor="middle" font-size="11" font-weight="600" fill="#0C447C">B1</text>
+<text x="166" y="118" text-anchor="middle" font-size="10" fill="#185FA5">16 ch</text>
+<text x="166" y="132" text-anchor="middle" font-size="10" fill="#185FA5">t=1</text>
+
+<!-- B2-B3 -->
+<rect x="212" y="82" width="68" height="64" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.8"/>
+<text x="246" y="103" text-anchor="middle" font-size="11" font-weight="600" fill="#0C447C">B2–B3</text>
+<text x="246" y="118" text-anchor="middle" font-size="10" fill="#185FA5">24 ch</text>
+<text x="246" y="132" text-anchor="middle" font-size="10" fill="#185FA5">t=6</text>
+
+<!-- B4-B6 (in zone) -->
+<rect x="348" y="82" width="80" height="64" rx="6" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="388" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#04342C">B4–B6</text>
+<text x="388" y="115" text-anchor="middle" font-size="10" fill="#085041">32 ch</text>
+<text x="388" y="129" text-anchor="middle" font-size="10" fill="#085041">t=6</text>
+<text x="388" y="141" text-anchor="middle" font-size="9" font-weight="600" fill="#04342C">★ modified</text>
+
+<!-- B7-B10 (in zone) -->
+<rect x="440" y="82" width="80" height="64" rx="6" fill="#5DCAA5" stroke="#0F6E56" stroke-width="1.2"/>
+<text x="480" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#04342C">B7–B10</text>
+<text x="480" y="115" text-anchor="middle" font-size="10" fill="#085041">64 ch</text>
+<text x="480" y="129" text-anchor="middle" font-size="10" fill="#085041">t=6</text>
+<text x="480" y="141" text-anchor="middle" font-size="9" font-weight="600" fill="#04342C">★ modified</text>
+
+<!-- B11-B13 (outside zone, unchanged) -->
+<rect x="532" y="82" width="80" height="64" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.8"/>
+<text x="572" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#0C447C">B11–B13</text>
+<text x="572" y="115" text-anchor="middle" font-size="10" fill="#185FA5">96 ch</text>
+<text x="572" y="129" text-anchor="middle" font-size="10" fill="#185FA5">t=6</text>
+
+<!-- B14-B16 -->
+<rect x="628" y="82" width="80" height="64" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.8"/>
+<text x="668" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#0C447C">B14–B16</text>
+<text x="668" y="115" text-anchor="middle" font-size="10" fill="#185FA5">160 ch</text>
+<text x="668" y="129" text-anchor="middle" font-size="10" fill="#185FA5">t=6</text>
+
+<!-- B17 -->
+<rect x="720" y="82" width="68" height="64" rx="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.8"/>
+<text x="754" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#0C447C">B17</text>
+<text x="754" y="115" text-anchor="middle" font-size="10" fill="#185FA5">320 ch</text>
+<text x="754" y="129" text-anchor="middle" font-size="10" fill="#185FA5">t=6</text>
+
+<!-- Head -->
+<rect x="800" y="82" width="148" height="64" rx="6" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="874" y="100" text-anchor="middle" font-size="11" font-weight="600" fill="#2C2C2A">Head</text>
+<text x="874" y="115" text-anchor="middle" font-size="10" fill="#5F5E5A">1×1 conv → GAP → FC</text>
+<text x="874" y="129" text-anchor="middle" font-size="10" fill="#5F5E5A">classifier</text>
+
+<!-- Row 1 arrows -->
+<line x1="120" y1="114" x2="130" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="200" y1="114" x2="210" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="280" y1="114" x2="346" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="428" y1="114" x2="438" y2="114" stroke="#0F6E56" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="520" y1="114" x2="530" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="612" y1="114" x2="626" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="708" y1="114" x2="718" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="788" y1="114" x2="798" y2="114" stroke="#888780" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+<!-- ===== ROW 2: channel detail strip ===== -->
+<text x="440" y="178" text-anchor="middle" font-size="11" font-weight="600" fill="#2C2C2A">Channel width progression</text>
+
+<!-- channel bars -->
+<rect x="30"  y="188" width="90"  height="14" rx="3" fill="#D3D1C7"/>
+<text x="75"  y="199" text-anchor="middle" font-size="9" fill="#444441">32</text>
+
+<rect x="132" y="188" width="68"  height="14" rx="3" fill="#85B7EB"/>
+<text x="166" y="199" text-anchor="middle" font-size="9" fill="#042C53">16</text>
+
+<rect x="212" y="188" width="68"  height="14" rx="3" fill="#85B7EB"/>
+<text x="246" y="199" text-anchor="middle" font-size="9" fill="#042C53">24</text>
+
+<rect x="348" y="188" width="80"  height="14" rx="3" fill="#1D9E75"/>
+<text x="388" y="199" text-anchor="middle" font-size="9" fill="#04342C">32</text>
+
+<rect x="440" y="188" width="80"  height="18" rx="3" fill="#1D9E75"/>
+<text x="480" y="200" text-anchor="middle" font-size="9" fill="#04342C">64</text>
+
+<rect x="532" y="188" width="80"  height="18" rx="3" fill="#85B7EB"/>
+<text x="572" y="200" text-anchor="middle" font-size="9" fill="#042C53">96</text>
+
+<rect x="628" y="188" width="80"  height="22" rx="3" fill="#85B7EB"/>
+<text x="668" y="202" text-anchor="middle" font-size="9" fill="#042C53">160</text>
+
+<rect x="720" y="188" width="68"  height="26" rx="3" fill="#85B7EB"/>
+<text x="754" y="204" text-anchor="middle" font-size="9" fill="#042C53">320</text>
+
+<rect x="800" y="188" width="148" height="14" rx="3" fill="#D3D1C7"/>
+<text x="874" y="199" text-anchor="middle" font-size="9" fill="#444441">classifier</text>
+
+<!-- x-axis label -->
+<text x="30"  y="230" font-size="10" fill="#888780">Input</text>
+<text x="874" y="230" text-anchor="middle" font-size="10" fill="#888780">Output</text>
+<line x1="50" y1="226" x2="930" y2="226" stroke="#B4B2A9" stroke-width="0.8" marker-end="url(#arrow)"/>
+<text x="450" y="242" text-anchor="middle" font-size="10" fill="#888780">→ depth increases, spatial resolution decreases →</text>
+
+<!-- ===== Legend ===== -->
+<rect x="20" y="272" width="940" height="40" rx="8" stroke="#B4B2A9" stroke-width="0.5" fill="#F8F7F3"/>
+<rect x="36" y="283" width="14" height="14" rx="3" fill="#5DCAA5" stroke="#0F6E56" stroke-width="0.8"/>
+<text x="56" y="294" font-size="11" fill="#2C2C2A">Modification zone B4–B10 (DualConv / ECA / Hybrid applied here, within ±10% FLOPs &amp; param budget)</text>
+<rect x="590" y="283" width="14" height="14" rx="3" fill="#B5D4F4" stroke="#185FA5" stroke-width="0.5"/>
+<text x="610" y="294" font-size="11" fill="#2C2C2A">Unchanged bottleneck blocks</text>
+<rect x="780" y="283" width="14" height="14" rx="3" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="800" y="294" font-size="11" fill="#2C2C2A">Stem / Head (fixed)</text>
+</svg>
