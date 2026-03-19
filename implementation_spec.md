@@ -761,27 +761,45 @@ Build the full hybrid variant and verify all four modes through one common facto
 
 ## Phase 7 — Training Infrastructure
 ### Objective
-Create the reusable training loop, checkpointing, logging, and determinism utilities.
+Create the reusable training/evaluation utilities, checkpointing, logging artifacts, and determinism utilities.
 
 ### Tasks
-- implement trainer
-- implement scheduler hookup
-- implement early stopping
-- implement checkpoint saving/loading
-- implement structured logging
-- implement seed control utility
-- add short reproducibility test
+- implement reusable epoch training step (`train_one_epoch`)
+- implement evaluation utility (`evaluate`) for val/test loss + accuracy
+- implement checkpoint save/load utilities
+- implement config loading utilities (YAML)
+- implement canonical experiment runner that:
+  - applies seed control deterministically
+  - configures optimizer + scheduler
+  - saves best-validation checkpoint
+  - evaluates test metrics from best-validation checkpoint
+  - writes machine-readable run outputs
+- implement early stopping in the canonical runner (warm-up + patience + min-delta)
+- add a short smoke/reproducibility test (may be synthetic) to validate the pipeline
 
 ### Deliverables
-- `trainer.py`
-- `checkpointing.py`
-- `scheduler.py`
-- `seeds.py`
+- `training/train.py` (epoch step)
+- `training/evaluate.py` (val/test evaluation)
+- `training/utils.py` (checkpointing + YAML config loading)
+- `data/preprocessing.py` (seed control utility)
+- `experiments/run_train_eval.py` (canonical training+evaluation runner)
+- `training/smoke_test.py` (pipeline smoke test)
+
+### Strict gaps / follow-ups (must be addressed before Phase 9)
+- **Trainer abstraction**: no reusable `Trainer` class/module currently exists; early stopping and per-epoch orchestration live in experiment runners.
+- **Resume/retry support**: resume-from-checkpoint and robust retry handling are not implemented yet; Phase 9 requires this for the 60-run matrix.
+- **Structured per-epoch logs**: run-level JSON artifacts exist, but there is no centralized per-epoch event log (e.g., JSONL/CSV) or unified logger API.
+- **End-to-end reproducibility mini-run**: existing smoke test is synthetic and may instantiate a concrete model directly; add a true mini-run that exercises `models.factory.build_model` and the canonical runner path.
 
 ### Exit Criteria
-- a short training run completes end-to-end
-- checkpoints save/load correctly
-- logs contain all required fields
+- running a short training job completes end-to-end via the canonical runner
+- checkpoints save/load correctly (best-validation checkpoint exists and can be loaded)
+- test metrics are computed from the best-validation checkpoint (not the last epoch)
+- machine-readable artifacts are written for each run:
+  - `outputs/<dataset>/<model>/seed_<seed>/checkpoints/best.pt`
+  - `outputs/<dataset>/<model>/seed_<seed>/logs/env.json`
+  - `outputs/<dataset>/<model>/seed_<seed>/logs/config.json`
+  - `outputs/<dataset>/<model>/seed_<seed>/metrics.json`
 
 ---
 
@@ -811,6 +829,7 @@ Validate that each variant can train without crashing and produce plausible lear
 Execute the complete 60-run experiment matrix.
 
 ### Tasks
+- prerequisite: implement resume-from-checkpoint and retry-safe runs (see Phase 7 strict gaps)
 - run all variants across all datasets and seeds
 - support resume/retry for interrupted runs
 - monitor run completion and output integrity

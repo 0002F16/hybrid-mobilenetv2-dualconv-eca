@@ -8,6 +8,7 @@ from models.mobilenetv2_dualconv_variants import (
     MobileNetV2DualConvB4B10,
     MobileNetV2DualConvB4B7,
 )
+from models.factory import build_model
 
 __all__ = [
     "MobileNetV2Backbone",
@@ -16,4 +17,5 @@ __all__ = [
     "MobileNetV2DualConvAll",
     "MobileNetV2DualConvB4B10",
     "MobileNetV2DualConvB4B7",
+    "build_model",
 ]

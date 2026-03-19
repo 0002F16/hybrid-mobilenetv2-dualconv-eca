@@ -20,17 +20,27 @@ def save_checkpoint(
     epoch: int,
     loss: float,
     path: str | Path,
+    scheduler: Any | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> None:
     """Save training checkpoint."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
+    payload: dict[str, Any] = {
+        "epoch": epoch,
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "loss": loss,
+    }
+    if scheduler is not None and hasattr(scheduler, "state_dict"):
+        try:
+            payload["scheduler_state_dict"] = scheduler.state_dict()
+        except Exception:
+            pass
+    if extra:
+        payload.update(extra)
     torch.save(
-        {
-            "epoch": epoch,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "loss": loss,
-        },
+        payload,
         path,
     )
 

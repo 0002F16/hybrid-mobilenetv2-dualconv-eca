@@ -15,7 +15,7 @@ from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from data.preprocessing import DEFAULT_SPLIT_SEED, get_dataset_loaders, set_seed
-from models.hybrid import HybridMobileNetV2
+from models.factory import build_model
 from training.train import train_one_epoch
 from training.evaluate import evaluate
 from training.utils import load_config, save_checkpoint
@@ -26,9 +26,16 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/cifar10.yaml", help="Config path")
     parser.add_argument("--output_dir", default="outputs", help="Output directory")
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Optional model override (e.g. baseline, hybrid). If set, overrides config.",
+    )
     args = parser.parse_args()
 
     cfg = load_config(args.config)
+    if args.model:
+        cfg["model"] = args.model
     set_seed(cfg["seed"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -45,12 +52,7 @@ def main() -> None:
     )
 
     # Model
-    input_size = 32 if "cifar" in cfg["dataset"] else 64
-    model = HybridMobileNetV2(
-        num_classes=cfg["num_classes"],
-        width_multiplier=cfg.get("width_multiplier", 1.0),
-        input_size=input_size,
-    ).to(device)
+    model = build_model(cfg).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = SGD(

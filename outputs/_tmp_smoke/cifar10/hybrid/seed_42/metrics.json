@@ -1,0 +1,16 @@
+{
+  "best_val": {
+    "epoch": 1,
+    "val_acc": 0.25,
+    "val_loss": 1.995728850364685
+  },
+  "dataset": "cifar10",
+  "model": "hybrid",
+  "seed": 42,
+  "stopped_epoch": null,
+  "test": {
+    "acc": 0.25,
+    "loss": 1.995728850364685,
+    "top1_pp": 25.0
+  }
+}
