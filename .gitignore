@@ -36,3 +36,5 @@ data/*.tar.gz
 
 # Artifacts (machine-generated metadata)
 artifacts/
+conversation_compact.md
+

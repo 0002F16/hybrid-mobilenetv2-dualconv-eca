@@ -1,15 +1,9 @@
 """
-MobileNetV2 Hybrid: DualConv + ECA in bottlenecks B4–B10.
+MobileNetV2 Hybrid: lightweight DualConv + ECA in bottlenecks B4-B10.
 
-Spec Section 3.6 — hybrid bottleneck sequence:
-  1. expansion 1×1 conv + BN + ReLU6   (skip when expand_ratio == 1)
-  2. DualConv2d replacing depthwise     (on expanded channels C_exp)
-  3. BN + ReLU6                         (after DualConv fusion)
-  4. projection 1×1 conv + BN           (linear bottleneck, no activation)
-  5. ECA on projected output            (adaptive kernel on C_out)
-  6. residual addition                  (when stride==1 and in_ch==out_ch)
-
-Blocks outside B4–B10 use the baseline InvertedResidual unchanged.
+This variant keeps the efficient DualConvBlock path and appends ECA directly
+on the block output for B4..B10 replacements. Blocks outside B4..B10 use the
+baseline InvertedResidual unchanged.
 """
 
 from __future__ import annotations
@@ -17,7 +11,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from models.dualconv import DualConv2d
+from models.dualconv import DualConvBlock
 from models.eca import ECA
 from models.mobilenetv2_baseline import (
     ConvBNReLU,
@@ -30,11 +24,11 @@ from models.mobilenetv2_baseline import (
 
 class InvertedResidualDualConvECA(nn.Module):
     """
-    Hybrid inverted residual: expansion -> DualConv -> projection -> ECA -> residual.
+    Lightweight hybrid block: DualConvBlock -> ECA.
 
-    DualConv2d replaces the standard 3×3 depthwise convolution on the expanded
-    feature map.  ECA is applied after projection BN and before the residual add,
-    matching the ECA-only variant's insertion point.
+    `expand_ratio` is intentionally accepted to keep call signatures aligned
+    with baseline/hybrid block construction, but it is not used in this
+    lightweight path.
     """
 
     def __init__(
@@ -49,49 +43,18 @@ class InvertedResidualDualConvECA(nn.Module):
         eca_b: int = 1,
     ) -> None:
         super().__init__()
-        self.stride = stride
-        hidden_ch = int(round(in_ch * expand_ratio))
-        self.use_res_connect = stride == 1 and in_ch == out_ch
-
-        layers: list[nn.Module] = []
-
-        # 1. Expansion 1×1 (skip when ratio == 1)
-        if expand_ratio != 1:
-            layers.extend([
-                nn.Conv2d(in_ch, hidden_ch, 1, bias=False),
-                nn.BatchNorm2d(hidden_ch),
-                nn.ReLU6(inplace=True),
-            ])
-
-        # 2–3. DualConv replacing depthwise + BN + ReLU6
-        layers.extend([
-            DualConv2d(
-                hidden_ch,
-                hidden_ch,
-                stride=stride,
-                groups=dualconv_groups,
-            ),
-            nn.BatchNorm2d(hidden_ch),
-            nn.ReLU6(inplace=True),
-        ])
-
-        # 4. Projection 1×1 + BN (linear bottleneck — no activation)
-        layers.extend([
-            nn.Conv2d(hidden_ch, out_ch, 1, bias=False),
-            nn.BatchNorm2d(out_ch),
-        ])
-
-        self.conv = nn.Sequential(*layers)
-
-        # 5. ECA on projected output (C_out channels)
+        _ = expand_ratio
+        self.dualconv_block = DualConvBlock(
+            in_ch,
+            out_ch,
+            stride=stride,
+            groups=dualconv_groups,
+        )
         self.eca = ECA(out_ch, gamma=eca_gamma, b=eca_b)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.conv(x)
-        out = self.eca(out)
-        if self.use_res_connect:
-            return x + out
-        return out
+        out = self.dualconv_block(x)
+        return self.eca(out)
 
 
 class MobileNetV2Hybrid(nn.Module):
