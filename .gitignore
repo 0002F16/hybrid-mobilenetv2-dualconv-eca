@@ -30,3 +30,9 @@ data/*.tar.gz
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Pytest
+.pytest_cache/
+
+# Artifacts (machine-generated metadata)
+artifacts/

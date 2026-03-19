@@ -1,10 +1,11 @@
-torch>=2.0.0
-torchvision>=0.15.0
-numpy>=1.24.0
-pandas>=2.0.0
-certifi>=2023.0.0
-pyyaml>=6.0
+torch==2.9.1
+torchvision==0.24.1
+numpy==1.26.4
+pandas==2.2.2
+certifi==2024.2.2
+pyyaml==6.0.1
+pytest==8.3.3
 
 # Profiling (thesis 3.7.3: FLOPs via fvcore; thop optional fallback)
-fvcore>=0.1.5
-thop>=0.1.1
+fvcore==0.1.5.post20221221
+thop==0.1.1.post2209072238

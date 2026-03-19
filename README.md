@@ -7,6 +7,13 @@ Hybrid MobileNetV2 with efficient convolution and lightweight attention for comp
 - **Training, FLOPs/parameter profiling, and model-size profiling** can be run on **Google Colab** (or any single-GPU environment).
 - **Inference latency** should be measured on **local hardware** (e.g. a fixed local GPU) for stable, comparable timings. See thesis Section 3.7.1.
 
+## Reproducibility notes
+
+- **Dependency pinning**: install from the pinned `requirements.txt` (exact versions).
+- **Seeds**: training is intended to run with fixed seeds (see configs). The thesis seed set is: `42`, `123`, `3407`, `2024`, `777`.
+- **Determinism**: this repo sets seeds (Python/NumPy/PyTorch) via `data.preprocessing.set_seed`. GPU kernels can still have nondeterminism depending on CUDA/cuDNN and operator choices; record `outputs/logs/env.json` for every run.
+- **Version logging**: training writes `outputs/logs/env.json` with `python`, `torch`, `torchvision`, CUDA/cuDNN availability, and git commit hash.
+
 ## Structure
 
 ```
@@ -24,7 +31,15 @@ Hybrid MobileNetV2 with efficient convolution and lightweight attention for comp
 
 ```bash
 pip install -r requirements.txt
-python example_usage.py
+python3 example_usage.py
+```
+
+### Version logging (standalone)
+
+If you want to capture environment metadata without running training:
+
+```bash
+python3 -c "from utils.versioning import write_env_info_json; write_env_info_json('outputs/logs/env.json')"
 ```
 
 ### Baseline profiling

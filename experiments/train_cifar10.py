@@ -14,11 +14,12 @@ import torch.nn as nn
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
-from data.preprocessing import get_dataset_loaders, set_seed
+from data.preprocessing import DEFAULT_SPLIT_SEED, get_dataset_loaders, set_seed
 from models.hybrid import HybridMobileNetV2
 from training.train import train_one_epoch
 from training.evaluate import evaluate
 from training.utils import load_config, save_checkpoint
+from utils.versioning import write_env_info_json
 
 
 def main() -> None:
@@ -37,6 +38,7 @@ def main() -> None:
         batch_size=cfg["batch_size"],
         num_workers=cfg.get("num_workers", 4),
         seed=cfg["seed"],
+        split_seed=cfg.get("split_seed", DEFAULT_SPLIT_SEED),
     )
     train_loader, val_loader, test_loader = get_dataset_loaders(
         cfg["dataset"], **kwargs
@@ -72,6 +74,9 @@ def main() -> None:
     log_dir = output_dir / "logs"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     log_dir.mkdir(parents=True, exist_ok=True)
+
+    # Version / environment logging for reproducibility
+    write_env_info_json(log_dir / "env.json", repo_root=Path(__file__).resolve().parents[1])
 
     best_acc = -1.0
     best_top1_pp = -1.0
