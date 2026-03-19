@@ -1,0 +1,58 @@
+[
+  {
+    "variant": "baseline",
+    "params": 2236682,
+    "params_pct_vs_baseline": 0.0,
+    "flops": 25556736,
+    "flops_pct_vs_baseline": 0.0,
+    "macs": 12778368,
+    "flops_method": "fvcore",
+    "size_mb": 8.760142,
+    "latency_ms": null,
+    "within_budget": true,
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "dualconv",
+    "params": 2069562,
+    "params_pct_vs_baseline": -7.4718,
+    "flops": 20393728,
+    "flops_pct_vs_baseline": -20.2021,
+    "macs": 10196864,
+    "flops_method": "fvcore",
+    "size_mb": 8.070909,
+    "latency_ms": null,
+    "within_budget": false,
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "eca",
+    "params": 2236711,
+    "params_pct_vs_baseline": 0.0013,
+    "flops": 25568544,
+    "flops_pct_vs_baseline": 0.0462,
+    "macs": 12784272,
+    "flops_method": "fvcore",
+    "size_mb": 8.763085,
+    "latency_ms": null,
+    "within_budget": true,
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "hybrid",
+    "params": 4084375,
+    "params_pct_vs_baseline": 82.6087,
+    "flops": 69639456,
+    "flops_pct_vs_baseline": 172.4896,
+    "macs": 34819728,
+    "flops_method": "fvcore",
+    "size_mb": 15.814246,
+    "latency_ms": null,
+    "within_budget": false,
+    "input_res": 32,
+    "num_classes": 10
+  }
+]

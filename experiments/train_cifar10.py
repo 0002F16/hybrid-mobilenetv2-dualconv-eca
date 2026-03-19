@@ -12,13 +12,12 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torch.optim import SGD
-from torch.optim.lr_scheduler import CosineAnnealingLR
 
 from data.preprocessing import DEFAULT_SPLIT_SEED, get_dataset_loaders, set_seed
 from models.factory import build_model
 from training.train import train_one_epoch
 from training.evaluate import evaluate
-from training.utils import load_config, save_checkpoint
+from training.utils import build_scheduler, load_config, save_checkpoint
 from utils.versioning import write_env_info_json
 
 
@@ -61,7 +60,11 @@ def main() -> None:
         momentum=cfg["momentum"],
         weight_decay=cfg["weight_decay"],
     )
-    scheduler = CosineAnnealingLR(optimizer, T_max=cfg["epochs"])
+    scheduler = build_scheduler(
+        optimizer=optimizer,
+        cfg=cfg,
+        epochs=int(cfg["epochs"]),
+    )
 
     summary_log_interval = cfg.get("summary_log_interval_epochs", 10)
 
@@ -89,7 +92,8 @@ def main() -> None:
 
         val_loss, val_acc = evaluate(model, val_loader, criterion, device)
         val_top1_pp = 100.0 * val_acc
-        scheduler.step()
+        if scheduler is not None:
+            scheduler.step()
 
         if epoch % summary_log_interval == 0:
             print(

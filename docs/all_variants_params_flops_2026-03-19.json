@@ -1,0 +1,56 @@
+[
+  {
+    "variant": "baseline",
+    "params": 2236682,
+    "flops": 25556736,
+    "macs": 12778368,
+    "flops_method": "fvcore",
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "dualconv_b4b10",
+    "params": 2069562,
+    "flops": 20393728,
+    "macs": 10196864,
+    "flops_method": "fvcore",
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "dualconv_all",
+    "params": 952026,
+    "flops": 9352960,
+    "macs": 4676480,
+    "flops_method": "fvcore",
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "dualconv_b4b7",
+    "params": 2192058,
+    "flops": 22353664,
+    "macs": 11176832,
+    "flops_method": "fvcore",
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "eca",
+    "params": 2236711,
+    "flops": 25568544,
+    "macs": 12784272,
+    "flops_method": "fvcore",
+    "input_res": 32,
+    "num_classes": 10
+  },
+  {
+    "variant": "hybrid",
+    "params": 4084375,
+    "flops": 69639456,
+    "macs": 34819728,
+    "flops_method": "fvcore",
+    "input_res": 32,
+    "num_classes": 10
+  }
+]

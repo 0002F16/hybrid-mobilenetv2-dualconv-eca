@@ -1,101 +1,189 @@
 """
-Hybrid MobileNetV2: backbone + efficient convolution + lightweight attention.
+MobileNetV2 Hybrid: DualConv + ECA in bottlenecks B4–B10.
 
-Combines MobileNetV2 backbone with attention modules for complex image classification.
+Spec Section 3.6 — hybrid bottleneck sequence:
+  1. expansion 1×1 conv + BN + ReLU6   (skip when expand_ratio == 1)
+  2. DualConv2d replacing depthwise     (on expanded channels C_exp)
+  3. BN + ReLU6                         (after DualConv fusion)
+  4. projection 1×1 conv + BN           (linear bottleneck, no activation)
+  5. ECA on projected output            (adaptive kernel on C_out)
+  6. residual addition                  (when stride==1 and in_ch==out_ch)
+
+Blocks outside B4–B10 use the baseline InvertedResidual unchanged.
 """
+
+from __future__ import annotations
 
 import torch
 import torch.nn as nn
 
-from models.attention import LightweightAttention
-from models.efficient_conv import InvertedResidual
+from models.dualconv import DualConv2d
+from models.eca import ECA
+from models.mobilenetv2_baseline import (
+    ConvBNReLU,
+    InvertedResidual,
+    REPLACEMENT_BLOCK_NAMES,
+    _INVERTED_RESIDUAL_SETTING,
+    _make_divisible,
+)
 
 
-def _make_divisible(v: float, divisor: int, min_value: int | None = None) -> int:
-    if min_value is None:
-        min_value = divisor
-    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
-
-
-class HybridMobileNetV2(nn.Module):
+class InvertedResidualDualConvECA(nn.Module):
     """
-    Hybrid MobileNetV2 with lightweight attention.
+    Hybrid inverted residual: expansion -> DualConv -> projection -> ECA -> residual.
 
-    Inverted residual blocks with optional SE-style attention after selected blocks.
+    DualConv2d replaces the standard 3×3 depthwise convolution on the expanded
+    feature map.  ECA is applied after projection BN and before the residual add,
+    matching the ECA-only variant's insertion point.
     """
 
     def __init__(
         self,
-        num_classes: int = 10,
-        width_multiplier: float = 1.0,
-        input_size: int = 32,
-        round_nearest: int = 8,
-        attention_reduction: int = 16,
+        in_ch: int,
+        out_ch: int,
+        stride: int,
+        expand_ratio: float,
+        *,
+        dualconv_groups: int = 4,
+        eca_gamma: int = 2,
+        eca_b: int = 1,
     ) -> None:
         super().__init__()
-        self.num_classes = num_classes
-        self.input_size = input_size
+        self.stride = stride
+        hidden_ch = int(round(in_ch * expand_ratio))
+        self.use_res_connect = stride == 1 and in_ch == out_ch
 
-        input_channel = 32
-        last_channel = 1280
-        input_channel = _make_divisible(input_channel * width_multiplier, round_nearest)
-        self.last_channel = _make_divisible(
-            last_channel * max(1.0, width_multiplier), round_nearest
-        )
+        layers: list[nn.Module] = []
 
-        self.features: list[nn.Module] = []
-        self.features.extend([
-            nn.Conv2d(3, input_channel, 3, stride=1, padding=1, bias=False),
-            nn.BatchNorm2d(input_channel),
+        # 1. Expansion 1×1 (skip when ratio == 1)
+        if expand_ratio != 1:
+            layers.extend([
+                nn.Conv2d(in_ch, hidden_ch, 1, bias=False),
+                nn.BatchNorm2d(hidden_ch),
+                nn.ReLU6(inplace=True),
+            ])
+
+        # 2–3. DualConv replacing depthwise + BN + ReLU6
+        layers.extend([
+            DualConv2d(
+                hidden_ch,
+                hidden_ch,
+                stride=stride,
+                groups=dualconv_groups,
+            ),
+            nn.BatchNorm2d(hidden_ch),
             nn.ReLU6(inplace=True),
         ])
 
-        inverted_residual_setting = [
-            [1, 16, 1, 1],
-            [6, 24, 2, 1 if input_size <= 32 else 2],
-            [6, 32, 3, 2],
-            [6, 64, 4, 2],
-            [6, 96, 3, 1],
-            [6, 160, 3, 2],
-            [6, 320, 1, 1],
-        ]
+        # 4. Projection 1×1 + BN (linear bottleneck — no activation)
+        layers.extend([
+            nn.Conv2d(hidden_ch, out_ch, 1, bias=False),
+            nn.BatchNorm2d(out_ch),
+        ])
 
-        # Add attention after blocks with sufficient channels (e.g. 64+)
-        attention_positions = {4, 5, 6}  # After 64, 96, 160 channel blocks
+        self.conv = nn.Sequential(*layers)
 
-        block_idx = 0
-        for t, c, n, s in inverted_residual_setting:
-            output_channel = _make_divisible(c * width_multiplier, round_nearest)
+        # 5. ECA on projected output (C_out channels)
+        self.eca = ECA(out_ch, gamma=eca_gamma, b=eca_b)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = self.conv(x)
+        out = self.eca(out)
+        if self.use_res_connect:
+            return x + out
+        return out
+
+
+class MobileNetV2Hybrid(nn.Module):
+    """
+    MobileNetV2 with DualConv + ECA applied to bottlenecks B4–B10.
+
+    Blocks outside the replacement scope remain baseline InvertedResidual.
+    Shares the same stem, head, classifier, stride policy, and weight-init
+    as MobileNetV2Baseline and the single-modification variants.
+    """
+
+    def __init__(
+        self,
+        num_classes: int,
+        width_mult: float = 1.0,
+        round_nearest: int = 8,
+        dropout: float = 0.2,
+        small_input: bool = False,
+        *,
+        dualconv_groups: int = 4,
+        eca_gamma: int = 2,
+        eca_b: int = 1,
+    ) -> None:
+        super().__init__()
+        self.num_classes = num_classes
+        self.width_mult = width_mult
+        self.small_input = small_input
+        self.dualconv_groups = dualconv_groups
+        self.eca_gamma = eca_gamma
+        self.eca_b = eca_b
+
+        input_ch = _make_divisible(32 * width_mult, round_nearest)
+        self.last_ch = _make_divisible(1280 * max(1.0, width_mult), round_nearest)
+
+        stem_stride = 1 if small_input else 2
+        self.stem = ConvBNReLU(3, input_ch, kernel_size=3, stride=stem_stride)
+
+        self.blocks = nn.ModuleDict()
+        block_names = self._block_names_from_setting()
+        current_ch = input_ch
+        idx = 0
+        for t, c, n, s in _INVERTED_RESIDUAL_SETTING:
+            out_ch = _make_divisible(c * width_mult, round_nearest)
             for i in range(n):
                 stride = s if i == 0 else 1
-                self.features.append(
-                    InvertedResidual(input_channel, output_channel, stride, t)
-                )
-                input_channel = output_channel
-                if block_idx in attention_positions and output_channel >= 32:
-                    self.features.append(
-                        LightweightAttention(output_channel, attention_reduction)
+                name = block_names[idx]
+                if name in REPLACEMENT_BLOCK_NAMES:
+                    self.blocks[name] = InvertedResidualDualConvECA(
+                        current_ch,
+                        out_ch,
+                        stride,
+                        float(t),
+                        dualconv_groups=dualconv_groups,
+                        eca_gamma=eca_gamma,
+                        eca_b=eca_b,
                     )
-                block_idx += 1
+                else:
+                    self.blocks[name] = InvertedResidual(
+                        current_ch, out_ch, stride, float(t)
+                    )
+                current_ch = out_ch
+                idx += 1
 
-        self.features.append(
-            nn.Conv2d(input_channel, self.last_channel, 1, bias=False),
-        )
-        self.features.append(nn.BatchNorm2d(self.last_channel))
-        self.features.append(nn.ReLU6(inplace=True))
+        self.block_order = block_names
 
-        self.features = nn.Sequential(*self.features)
+        self.head_conv = nn.Conv2d(current_ch, self.last_ch, 1, bias=False)
+        self.head_bn = nn.BatchNorm2d(self.last_ch)
+        self.head_act = nn.ReLU6(inplace=True)
+
         self.classifier = nn.Sequential(
-            nn.Dropout(0.2),
-            nn.Linear(self.last_channel, num_classes),
+            nn.Dropout(p=dropout),
+            nn.Linear(self.last_ch, num_classes),
         )
         self._init_weights()
 
+    @staticmethod
+    def _block_names_from_setting() -> list[str]:
+        names: list[str] = []
+        for _, _, n, _ in _INVERTED_RESIDUAL_SETTING:
+            for _ in range(n):
+                names.append(f"B{len(names) + 1}")
+        return names
+
+    def _forward_features(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.stem(x)
+        for name in self.block_order:
+            x = self.blocks[name](x)
+        x = self.head_act(self.head_bn(self.head_conv(x)))
+        return x
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.features(x)
+        x = self._forward_features(x)
         x = nn.functional.adaptive_avg_pool2d(x, 1)
         x = torch.flatten(x, 1)
         x = self.classifier(x)
@@ -113,3 +201,12 @@ class HybridMobileNetV2(nn.Module):
             elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.zeros_(m.bias)
+
+    def __repr__(self) -> str:
+        return (
+            f"MobileNetV2Hybrid(num_classes={self.num_classes}, "
+            f"width_mult={self.width_mult}, small_input={self.small_input}, "
+            f"dualconv_groups={self.dualconv_groups}, "
+            f"eca_gamma={self.eca_gamma}, eca_b={self.eca_b}, "
+            f"replacement_scope={REPLACEMENT_BLOCK_NAMES})"
+        )

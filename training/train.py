@@ -16,7 +16,7 @@ def train_one_epoch(
     """Run one training epoch and return average loss."""
     model.train()
     total_loss = 0.0
-    num_batches = 0
+    total_examples = 0
 
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
@@ -25,7 +25,8 @@ def train_one_epoch(
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
-        total_loss += loss.item()
-        num_batches += 1
+        batch_size = target.size(0)
+        total_loss += loss.item() * batch_size
+        total_examples += batch_size
 
-    return total_loss / max(num_batches, 1)
+    return total_loss / max(total_examples, 1)

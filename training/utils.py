@@ -5,6 +5,7 @@ from typing import Any
 
 import torch
 import torch.nn as nn
+from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
 import yaml
 
 
@@ -12,6 +13,34 @@ def load_config(config_path: str | Path) -> dict[str, Any]:
     """Load YAML config file."""
     with open(config_path) as f:
         return yaml.safe_load(f)
+
+
+def build_scheduler(
+    *,
+    optimizer: torch.optim.Optimizer,
+    cfg: dict[str, Any],
+    epochs: int,
+) -> LRScheduler | None:
+    """Build LR scheduler from config.
+
+    Supported scheduler values:
+    - ``cosine``: CosineAnnealingLR(T_max=epochs)
+    - ``none`` / ``null`` / missing: disable scheduler
+    """
+    raw_scheduler = cfg.get("scheduler", None)
+    if raw_scheduler is None:
+        return None
+
+    scheduler_name = str(raw_scheduler).strip().lower()
+    if scheduler_name in {"", "none", "null"}:
+        return None
+    if scheduler_name == "cosine":
+        return CosineAnnealingLR(optimizer, T_max=int(epochs))
+
+    valid = "cosine, none"
+    raise ValueError(
+        f"Unsupported scheduler '{raw_scheduler}'. Supported values: {valid}."
+    )
 
 
 def save_checkpoint(

@@ -16,7 +16,6 @@ from typing import Any
 import torch
 import torch.nn as nn
 from torch.optim import SGD
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, TensorDataset
 
 if __package__ is None or __package__ == "":
@@ -27,7 +26,7 @@ from data.preprocessing import DEFAULT_SPLIT_SEED, get_dataset_loaders, set_seed
 from models.factory import build_model
 from training.evaluate import evaluate
 from training.trainer import EarlyStoppingConfig, Trainer
-from training.utils import load_config
+from training.utils import build_scheduler, load_config
 from utils.versioning import write_env_info_json
 
 
@@ -130,7 +129,11 @@ def main() -> None:
         momentum=float(cfg["momentum"]),
         weight_decay=float(cfg["weight_decay"]),
     )
-    scheduler = CosineAnnealingLR(optimizer, T_max=int(cfg["epochs"]))
+    scheduler = build_scheduler(
+        optimizer=optimizer,
+        cfg=cfg,
+        epochs=int(cfg["epochs"]),
+    )
 
     summary_log_interval = int(cfg.get("summary_log_interval_epochs", 10))
     early_cfg = cfg.get("early_stopping", {}) or {}
