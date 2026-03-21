@@ -24,10 +24,23 @@ if __package__ is None or __package__ == "":
 from data.download_tiny_imagenet import ensure_tiny_imagenet
 from data.preprocessing import DEFAULT_SPLIT_SEED, get_dataset_loaders, set_seed
 from models.factory import build_model
-from training.evaluate import evaluate
+from training.evaluate import evaluate_top1_top5
 from training.trainer import EarlyStoppingConfig, Trainer
 from training.utils import build_scheduler, load_config
+from utils.profiling import compute_flops, count_parameters, measure_model_size_mb
 from utils.versioning import write_env_info_json
+
+
+def _input_chw_for_dataset(cfg: dict[str, Any], dataset: str) -> tuple[int, int, int]:
+    if cfg.get("input_size") is not None:
+        h = int(cfg["input_size"])
+        return (3, h, h)
+    ds = str(dataset).lower()
+    if ds in {"cifar10", "cifar100"}:
+        return (3, 32, 32)
+    if ds == "tiny_imagenet":
+        return (3, 64, 64)
+    return (3, 32, 32)
 
 
 def _run_dir(output_root: Path, cfg: dict[str, Any]) -> Path:
@@ -164,7 +177,14 @@ def main() -> None:
     # Test from best checkpoint
     ckpt = torch.load(ckpt_dir / "best.pt", map_location=device, weights_only=True)
     model.load_state_dict(ckpt["model_state_dict"])
-    test_loss, test_acc = evaluate(model, test_loader, criterion, device)
+    test_loss, test_top1, test_top5 = evaluate_top1_top5(
+        model, test_loader, criterion, device
+    )
+
+    input_chw = _input_chw_for_dataset(cfg, dataset)
+    nparams = count_parameters(model)
+    flops_result = compute_flops(model, input_chw, device)
+    size_mb = measure_model_size_mb(model)
 
     metrics = {
         "dataset": dataset,
@@ -172,14 +192,32 @@ def main() -> None:
         "seed": int(cfg["seed"]),
         "best_val": fit_summary["best_val"],
         "stopped_epoch": fit_summary.get("stopped_epoch", None),
-        "test": {"loss": float(test_loss), "acc": float(test_acc), "top1_pp": 100.0 * float(test_acc)},
+        "model_profile": {
+            "params": int(nparams),
+            "flops": int(flops_result["flops"]),
+            "macs": int(flops_result["macs"]),
+            "flops_method": flops_result["method_used"],
+            "size_mb": float(round(size_mb, 6)),
+            "input_size_chw": list(input_chw),
+        },
+        "test": {
+            "loss": float(test_loss),
+            "acc": float(test_top1),
+            "top1_pp": 100.0 * float(test_top1),
+            "top5_pp": 100.0 * float(test_top5),
+        },
     }
     (run_dir / "metrics.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
     print(f"Saved metrics to: {run_dir / 'metrics.json'}")
-    print(f"Test Top-1: {metrics['test']['top1_pp']:.2f}%")
+    print(
+        f"Test Top-1: {metrics['test']['top1_pp']:.2f}% | Top-5: {metrics['test']['top5_pp']:.2f}% | "
+        f"params={metrics['model_profile']['params']:,} | "
+        f"FLOPs={metrics['model_profile']['flops']:,} ({metrics['model_profile']['flops_method']}) | "
+        f"size={metrics['model_profile']['size_mb']:.4f} MB"
+    )
 
 
 if __name__ == "__main__":

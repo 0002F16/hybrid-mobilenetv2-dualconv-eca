@@ -56,7 +56,6 @@ def evaluate_top1_top5(
     correct_top5 = 0
     total = 0
 
-    maxk = 5
     with torch.no_grad():
         for data, target in loader:
             data, target = data.to(device), target.to(device)
@@ -66,7 +65,7 @@ def evaluate_top1_top5(
             total_loss += criterion(output, target).item() * batch_size
             total_examples += batch_size
 
-            # pred shape: (N, 5) with top-5 class indices per sample
+            maxk = min(5, output.size(1))
             _, pred = output.topk(k=maxk, dim=1, largest=True, sorted=True)
             target_expanded = target.view(-1, 1).expand_as(pred)
             correct = pred.eq(target_expanded)

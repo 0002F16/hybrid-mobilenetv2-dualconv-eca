@@ -1,0 +1,14 @@
+{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.0, "train_loss": 2.281123399734497, "val_acc": 0.109375, "val_loss": 2.30045747756958, "val_top1_pp": 10.9375}
+{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.0, "train_loss": 2.281123399734497, "val_acc": 0.109375, "val_loss": 2.30045747756958, "val_top1_pp": 10.9375}
+{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.0, "train_loss": 2.281123399734497, "val_acc": 0.109375, "val_loss": 2.30045747756958, "val_top1_pp": 10.9375}
+{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.0, "train_loss": 2.281123399734497, "val_acc": 0.109375, "val_loss": 2.30045747756958, "val_top1_pp": 10.9375}
+{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.09755282581475769, "train_loss": 2.281123399734497, "val_acc": 0.109375, "val_loss": 2.30045747756958, "val_top1_pp": 10.9375}
+{"early_stop_counter": 0, "epoch": 2, "is_best": false, "lr": 0.09045084971874738, "train_loss": 2.2838573455810547, "val_acc": 0.109375, "val_loss": 2.299098491668701, "val_top1_pp": 10.9375}
+{"early_stop_counter": 0, "epoch": 3, "is_best": true, "lr": 0.07938926261462367, "train_loss": 2.304234266281128, "val_acc": 0.125, "val_loss": 2.2998781204223633, "val_top1_pp": 12.5}
+{"early_stop_counter": 0, "epoch": 4, "is_best": false, "lr": 0.06545084971874739, "train_loss": 2.279066801071167, "val_acc": 0.09375, "val_loss": 2.299813747406006, "val_top1_pp": 9.375}
+{"early_stop_counter": 0, "epoch": 5, "is_best": false, "lr": 0.05000000000000001, "train_loss": 2.145289421081543, "val_acc": 0.09375, "val_loss": 2.2983436584472656, "val_top1_pp": 9.375}
+{"early_stop_counter": 0, "epoch": 6, "is_best": false, "lr": 0.03454915028125264, "train_loss": 2.0218505859375, "val_acc": 0.09375, "val_loss": 2.2979068756103516, "val_top1_pp": 9.375}
+{"early_stop_counter": 0, "epoch": 7, "is_best": false, "lr": 0.020610737385376353, "train_loss": 1.6975524425506592, "val_acc": 0.125, "val_loss": 2.300203323364258, "val_top1_pp": 12.5}
+{"early_stop_counter": 0, "epoch": 8, "is_best": false, "lr": 0.009549150281252635, "train_loss": 1.3185842037200928, "val_acc": 0.09375, "val_loss": 2.3048453330993652, "val_top1_pp": 9.375}
+{"early_stop_counter": 0, "epoch": 9, "is_best": false, "lr": 0.002447174185242324, "train_loss": 0.9140605330467224, "val_acc": 0.09375, "val_loss": 2.3095157146453857, "val_top1_pp": 9.375}
+{"early_stop_counter": 0, "epoch": 10, "is_best": false, "lr": 0.0, "train_loss": 0.611308753490448, "val_acc": 0.09375, "val_loss": 2.3128323554992676, "val_top1_pp": 9.375}
