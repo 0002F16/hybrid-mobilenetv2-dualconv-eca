@@ -130,12 +130,15 @@ def main() -> None:
             seed=int(cfg["seed"]),
             split_seed=int(cfg.get("split_seed", DEFAULT_SPLIT_SEED)),
             artifacts_root=artifacts_dir,
+            randaugment_num_ops=cfg.get("randaugment_num_ops", None),
+            randaugment_magnitude=cfg.get("randaugment_magnitude", None),
+            random_erasing_p=float(cfg.get("random_erasing_p", 0.0)),
         )
 
     # Model
     model = build_model(cfg).to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(label_smoothing=float(cfg.get("label_smoothing", 0.0)))
     optimizer = SGD(
         model.parameters(),
         lr=float(cfg["learning_rate"]),
@@ -170,6 +173,9 @@ def main() -> None:
         val_interval_epochs=int(cfg.get("val_interval_epochs", 1)),
         summary_log_interval_epochs=summary_log_interval,
         early_stopping=early,
+        mix_prob=float(cfg.get("mix_prob", 0.0)),
+        mixup_alpha=float(cfg.get("mixup_alpha", 1.0)),
+        cutmix_alpha=float(cfg.get("cutmix_alpha", 1.0)),
     )
     resume_state = trainer.maybe_resume(resume=bool(args.resume), resume_path=args.resume_path)
     fit_summary = trainer.fit(resume_state=resume_state)

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 import torch
 from torch.optim import SGD
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, SequentialLR
 
 from training.utils import build_scheduler
 
@@ -37,5 +37,32 @@ def test_scheduler_invalid_name_raises_value_error() -> None:
         build_scheduler(
             optimizer=_optimizer(),
             cfg={"scheduler": "step"},
+            epochs=10,
+        )
+
+
+def test_scheduler_cosine_with_lr_warmup_builds_sequential() -> None:
+    scheduler = build_scheduler(
+        optimizer=_optimizer(),
+        cfg={"scheduler": "cosine", "lr_warmup_epochs": 3},
+        epochs=10,
+    )
+    assert isinstance(scheduler, SequentialLR)
+
+
+def test_scheduler_lr_warmup_ge_epochs_raises() -> None:
+    with pytest.raises(ValueError, match="lr_warmup_epochs"):
+        build_scheduler(
+            optimizer=_optimizer(),
+            cfg={"scheduler": "cosine", "lr_warmup_epochs": 10},
+            epochs=10,
+        )
+
+
+def test_scheduler_negative_lr_warmup_raises() -> None:
+    with pytest.raises(ValueError, match="lr_warmup_epochs"):
+        build_scheduler(
+            optimizer=_optimizer(),
+            cfg={"scheduler": "cosine", "lr_warmup_epochs": -1},
             epochs=10,
         )

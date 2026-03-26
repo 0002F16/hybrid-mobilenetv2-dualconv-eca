@@ -48,6 +48,9 @@ class Trainer:
         val_interval_epochs: int = 1,
         summary_log_interval_epochs: int = 10,
         early_stopping: EarlyStoppingConfig | None = None,
+        mix_prob: float = 0.0,
+        mixup_alpha: float = 1.0,
+        cutmix_alpha: float = 1.0,
     ) -> None:
         self.model = model
         self.device = device
@@ -62,6 +65,9 @@ class Trainer:
         self.val_interval_epochs = int(val_interval_epochs)
         self.summary_log_interval_epochs = int(summary_log_interval_epochs)
         self.early = early_stopping or EarlyStoppingConfig()
+        self.mix_prob = float(mix_prob)
+        self.mixup_alpha = float(mixup_alpha)
+        self.cutmix_alpha = float(cutmix_alpha)
 
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.ckpt_dir.mkdir(parents=True, exist_ok=True)
@@ -122,6 +128,9 @@ class Trainer:
                     self.criterion,
                     self.device,
                     epoch,
+                    mix_prob=self.mix_prob,
+                    mixup_alpha=self.mixup_alpha,
+                    cutmix_alpha=self.cutmix_alpha,
                 )
             )
 

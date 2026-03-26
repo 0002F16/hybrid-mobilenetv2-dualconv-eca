@@ -5,7 +5,12 @@ from typing import Any
 
 import torch
 import torch.nn as nn
-from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler
+from torch.optim.lr_scheduler import (
+    CosineAnnealingLR,
+    LinearLR,
+    LRScheduler,
+    SequentialLR,
+)
 import yaml
 
 
@@ -24,8 +29,14 @@ def build_scheduler(
     """Build LR scheduler from config.
 
     Supported scheduler values:
-    - ``cosine``: CosineAnnealingLR(T_max=epochs)
+    - ``cosine``: CosineAnnealingLR(T_max=epochs), optionally preceded by linear LR warmup.
     - ``none`` / ``null`` / missing: disable scheduler
+
+    Top-level ``lr_warmup_epochs`` (default 0): linearly ramps LR from ``start_factor``
+    of base LR to full base LR over that many epochs, then cosine-anneals for the
+    remaining ``epochs - lr_warmup_epochs`` steps. This is independent of
+    ``early_stopping.warmup_epochs``, which only delays when validation patience
+    starts; keep ``early_stopping.warmup_epochs >= lr_warmup_epochs`` when using both.
     """
     raw_scheduler = cfg.get("scheduler", None)
     if raw_scheduler is None:
@@ -35,7 +46,31 @@ def build_scheduler(
     if scheduler_name in {"", "none", "null"}:
         return None
     if scheduler_name == "cosine":
-        return CosineAnnealingLR(optimizer, T_max=int(epochs))
+        total_epochs = int(epochs)
+        lr_warmup_epochs = int(cfg.get("lr_warmup_epochs", 0))
+        if lr_warmup_epochs < 0:
+            raise ValueError(f"lr_warmup_epochs must be >= 0, got {lr_warmup_epochs}")
+        if lr_warmup_epochs > 0:
+            if lr_warmup_epochs >= total_epochs:
+                raise ValueError(
+                    f"lr_warmup_epochs ({lr_warmup_epochs}) must be < epochs ({total_epochs})"
+                )
+            warmup = LinearLR(
+                optimizer,
+                start_factor=1e-6,
+                end_factor=1.0,
+                total_iters=lr_warmup_epochs,
+            )
+            cosine = CosineAnnealingLR(
+                optimizer,
+                T_max=total_epochs - lr_warmup_epochs,
+            )
+            return SequentialLR(
+                optimizer,
+                schedulers=[warmup, cosine],
+                milestones=[lr_warmup_epochs],
+            )
+        return CosineAnnealingLR(optimizer, T_max=total_epochs)
 
     valid = "cosine, none"
     raise ValueError(

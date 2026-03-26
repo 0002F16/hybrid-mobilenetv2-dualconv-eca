@@ -1,3 +1,0 @@
-{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.05, "train_loss": 2.325801372528076, "val_acc": 0.125, "val_loss": 2.30098032951355, "val_top1_pp": 12.5}
-{"early_stop_counter": 0, "epoch": 2, "is_best": false, "lr": 0.0, "train_loss": 2.308671236038208, "val_acc": 0.125, "val_loss": 2.299804925918579, "val_top1_pp": 12.5}
-{"early_stop_counter": 0, "epoch": 3, "is_best": false, "lr": 0.049999999999999996, "train_loss": 2.2067811489105225, "val_acc": 0.125, "val_loss": 2.2990562915802, "val_top1_pp": 12.5}

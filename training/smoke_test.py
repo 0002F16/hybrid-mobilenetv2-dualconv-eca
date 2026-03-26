@@ -10,7 +10,6 @@ from typing import Any
 import torch
 import torch.nn as nn
 from torch.optim import SGD
-from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, TensorDataset
 
 if __package__ is None or __package__ == "":
@@ -19,7 +18,7 @@ if __package__ is None or __package__ == "":
 from data.preprocessing import set_seed
 from models.factory import build_model
 from training.trainer import EarlyStoppingConfig, Trainer
-from training.utils import load_config
+from training.utils import build_scheduler, load_config
 
 
 def run_training_smoke_test(
@@ -47,7 +46,7 @@ def run_training_smoke_test(
     cfg["input_size"] = int(cfg.get("input_size", input_size))
     model = build_model(cfg).to(resolved_device)
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(label_smoothing=float(cfg.get("label_smoothing", 0.0)))
     optimizer = SGD(
         model.parameters(),
         lr=cfg["learning_rate"],
@@ -123,7 +122,16 @@ def run_end_to_end_mini_run(
         momentum=float(cfg["momentum"]),
         weight_decay=float(cfg["weight_decay"]),
     )
-    scheduler = CosineAnnealingLR(optimizer, T_max=int(epochs))
+    mini_epochs = int(epochs)
+    cfg_sched = dict(cfg)
+    w = int(cfg_sched.get("lr_warmup_epochs", 0))
+    if w >= mini_epochs:
+        cfg_sched["lr_warmup_epochs"] = 0
+    scheduler = build_scheduler(
+        optimizer=optimizer,
+        cfg=cfg_sched,
+        epochs=mini_epochs,
+    )
 
     n = int(batch_size) * int(batches_per_epoch)
     x = torch.randn(n, 3, input_size, input_size)
@@ -163,6 +171,9 @@ def run_end_to_end_mini_run(
         val_interval_epochs=1,
         summary_log_interval_epochs=1,
         early_stopping=early,
+        mix_prob=float(cfg.get("mix_prob", 0.0)),
+        mixup_alpha=float(cfg.get("mixup_alpha", 1.0)),
+        cutmix_alpha=float(cfg.get("cutmix_alpha", 1.0)),
     )
     fit_summary = trainer.fit(resume_state=trainer.maybe_resume(resume=False))
 

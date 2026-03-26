@@ -127,6 +127,9 @@ def get_transforms(
     *,
     mean: tuple[float, float, float],
     std: tuple[float, float, float],
+    randaugment_num_ops: int | None = None,
+    randaugment_magnitude: int | None = None,
+    random_erasing_p: float = 0.0,
 ) -> Tuple[transforms.Compose, transforms.Compose]:
     """
     Return train and test transforms for the specified dataset.
@@ -149,14 +152,33 @@ def get_transforms(
 
     if name in {"cifar10", "cifar100"}:
         # PRD 4.4: pad -> random crop (32x32) -> flip -> normalize
-        train_transform = transforms.Compose(
+        train_steps: list[transforms.Transform] = [
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(p=0.5),
+        ]
+        if randaugment_num_ops is not None and randaugment_magnitude is not None:
+            train_steps.append(
+                transforms.RandAugment(
+                    num_ops=int(randaugment_num_ops),
+                    magnitude=int(randaugment_magnitude),
+                )
+            )
+        train_steps.extend(
             [
-                transforms.RandomCrop(32, padding=4),
-                transforms.RandomHorizontalFlip(p=0.5),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
         )
+        if float(random_erasing_p) > 0.0:
+            train_steps.append(
+                transforms.RandomErasing(
+                    p=float(random_erasing_p),
+                    scale=(0.02, 0.2),
+                    ratio=(0.3, 3.3),
+                    value=0,
+                )
+            )
+        train_transform = transforms.Compose(train_steps)
         test_transform = transforms.Compose(
             [
                 transforms.ToTensor(),
@@ -165,15 +187,34 @@ def get_transforms(
         )
     else:
         # PRD 4.4: resize -> random crop -> flip -> normalize
-        train_transform = transforms.Compose(
+        train_steps: list[transforms.Transform] = [
+            transforms.Resize(64),
+            transforms.RandomCrop(64),
+            transforms.RandomHorizontalFlip(p=0.5),
+        ]
+        if randaugment_num_ops is not None and randaugment_magnitude is not None:
+            train_steps.append(
+                transforms.RandAugment(
+                    num_ops=int(randaugment_num_ops),
+                    magnitude=int(randaugment_magnitude),
+                )
+            )
+        train_steps.extend(
             [
-                transforms.Resize(64),
-                transforms.RandomCrop(64),
-                transforms.RandomHorizontalFlip(p=0.5),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
         )
+        if float(random_erasing_p) > 0.0:
+            train_steps.append(
+                transforms.RandomErasing(
+                    p=float(random_erasing_p),
+                    scale=(0.02, 0.2),
+                    ratio=(0.3, 3.3),
+                    value=0,
+                )
+            )
+        train_transform = transforms.Compose(train_steps)
         # Deterministic eval preprocessing: resize + center crop
         test_transform = transforms.Compose(
             [
@@ -271,6 +312,9 @@ def get_cifar10_loaders(
     seed: int = 42,
     split_seed: int = DEFAULT_SPLIT_SEED,
     artifacts_root: str | Path = "artifacts",
+    randaugment_num_ops: int | None = None,
+    randaugment_magnitude: int | None = None,
+    random_erasing_p: float = 0.0,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Create train, validation, and test DataLoaders for CIFAR-10.
@@ -303,7 +347,14 @@ def get_cifar10_loaders(
     mean, std = compute_mean_std_from_dataset(
         train_stats_ds, batch_size=min(256, batch_size), num_workers=0
     )
-    train_transform, test_transform = get_transforms("cifar10", mean=mean, std=std)
+    train_transform, test_transform = get_transforms(
+        "cifar10",
+        mean=mean,
+        std=std,
+        randaugment_num_ops=randaugment_num_ops,
+        randaugment_magnitude=randaugment_magnitude,
+        random_erasing_p=random_erasing_p,
+    )
 
     test_dataset = CIFAR10(root=root, train=False, download=True, transform=test_transform)
 
@@ -366,6 +417,9 @@ def get_cifar100_loaders(
     seed: int = 42,
     split_seed: int = DEFAULT_SPLIT_SEED,
     artifacts_root: str | Path = "artifacts",
+    randaugment_num_ops: int | None = None,
+    randaugment_magnitude: int | None = None,
+    random_erasing_p: float = 0.0,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Create train, validation, and test DataLoaders for CIFAR-100.
@@ -397,7 +451,14 @@ def get_cifar100_loaders(
     mean, std = compute_mean_std_from_dataset(
         train_stats_ds, batch_size=min(256, batch_size), num_workers=0
     )
-    train_transform, test_transform = get_transforms("cifar100", mean=mean, std=std)
+    train_transform, test_transform = get_transforms(
+        "cifar100",
+        mean=mean,
+        std=std,
+        randaugment_num_ops=randaugment_num_ops,
+        randaugment_magnitude=randaugment_magnitude,
+        random_erasing_p=random_erasing_p,
+    )
 
     test_dataset = CIFAR100(root=root, train=False, download=True, transform=test_transform)
 
@@ -524,6 +585,9 @@ def get_tiny_imagenet_loaders(
     seed: int = 42,
     split_seed: int = DEFAULT_SPLIT_SEED,
     artifacts_root: str | Path = "artifacts",
+    randaugment_num_ops: int | None = None,
+    randaugment_magnitude: int | None = None,
+    random_erasing_p: float = 0.0,
 ) -> Tuple[DataLoader, DataLoader, DataLoader]:
     """
     Create train, validation, and test DataLoaders for Tiny-ImageNet.
@@ -562,7 +626,14 @@ def get_tiny_imagenet_loaders(
     mean, std = compute_mean_std_from_dataset(
         train_stats_ds, batch_size=min(256, batch_size), num_workers=0
     )
-    train_transform, test_transform = get_transforms("tiny_imagenet", mean=mean, std=std)
+    train_transform, test_transform = get_transforms(
+        "tiny_imagenet",
+        mean=mean,
+        std=std,
+        randaugment_num_ops=randaugment_num_ops,
+        randaugment_magnitude=randaugment_magnitude,
+        random_erasing_p=random_erasing_p,
+    )
 
     train_dataset = _TransformSubset(train_subset, train_transform)
     val_dataset = _TransformSubset(val_subset, test_transform)

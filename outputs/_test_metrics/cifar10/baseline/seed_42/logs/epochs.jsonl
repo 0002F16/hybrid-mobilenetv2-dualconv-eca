@@ -1,1 +1,0 @@
-{"early_stop_counter": 0, "epoch": 1, "is_best": true, "lr": 0.0, "train_loss": 2.281123399734497, "val_acc": 0.109375, "val_loss": 2.30045747756958, "val_top1_pp": 10.9375}

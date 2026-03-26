@@ -14,19 +14,32 @@ learning_rate: 0.1
 momentum: 0.9
 weight_decay: 5.0e-4
 
+# Linear LR warmup before cosine (optimizer schedule only). Use < epochs.
+# early_stopping.warmup_epochs below is separate: when val patience starts counting.
+lr_warmup_epochs: 5
+
 # Validation and logging cadence
 val_interval_epochs: 1
 summary_log_interval_epochs: 10
 
-# Early stopping (validation Top-1 accuracy, percentage points)
+# Early stopping: after warmup_epochs, require patience_epochs with min_delta_pp improvement
 early_stopping:
   enabled: true
-  warmup_epochs: 30
-  patience_epochs: 20
+  warmup_epochs: 45
+  patience_epochs: 30
   min_delta_pp: 0.1
 
 # Scheduler (cosine annealing)
 scheduler: cosine
+
+# Best-accuracy knobs (augmentation + regularization)
+randaugment_num_ops: 2
+randaugment_magnitude: 9
+random_erasing_p: 0.25
+mix_prob: 1.0
+mixup_alpha: 1.0
+cutmix_alpha: 1.0
+label_smoothing: 0.1
 
 # Reproducibility
 seed: 42
