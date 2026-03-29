@@ -8,9 +8,9 @@ num_classes: 200
 width_multiplier: 1.0
 
 # Training
-batch_size: 128
+batch_size: 64
 epochs: 200
-learning_rate: 0.1
+learning_rate: 0.01
 momentum: 0.9
 weight_decay: 5.0e-4
 
@@ -34,7 +34,7 @@ scheduler: cosine
 
 # Best-accuracy knobs (augmentation + regularization)
 randaugment_num_ops: 2
-randaugment_magnitude: 9
+randaugment_magnitude: 5
 random_erasing_p: 0.25
 mix_prob: 1.0
 mixup_alpha: 1.0
