@@ -27,51 +27,6 @@ Hybrid MobileNetV2 with efficient convolution and lightweight attention for comp
 └── docs/              # Methodology notes
 ```
 
-## Streamlit experiment dashboard
-
-Visualize per-seed runs, efficiency, training curves, and statistical tables for the four MobileNetV2 variants across CIFAR-10, CIFAR-100, and Tiny-ImageNet.
-
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-
-On first load, the app reads metrics from `Trained Models v3/` (preferred) and `Trained Models v2/` for **CIFAR-10** and **CIFAR-100** (`metrics.json` + `logs/epochs.jsonl`). You can also select `Trained Models v1/` from the sidebar if present. **Tiny-ImageNet** is not present in those folders; the dashboard fills it with **placeholder** data until you upload CSVs. If `epochs.jsonl` is shorter in v3 than in v2 for the same run, the loader keeps the file with **more lines**. **Latency** in the efficiency table uses the thesis static values (not read from disk).
-
-**Version indicators in the UI:** `df_runs` gains **`metrics_source`** (`v2`, `v3`, or `placeholder`) and **`curves_source`** (which folder supplied `epochs.jsonl`, or `placeholder` if the log was too short). `df_curves` includes **`curves_source`** per row. `df_efficiency` includes **`metrics_json_from`** (e.g. `v3` or `v2+v3`) describing which `metrics.json` versions fed the averaged profile. The sidebar summarizes row counts per version; some runs can show **mixed** v2 vs v3 when test metrics come from one tree and the longer training log from the other.
-
-### CSV upload schemas (optional)
-
-Replace all session data by uploading three files together and clicking **Apply CSV uploads**.
-
-**`df_runs.csv`**
-
-| seed | variant      | dataset       | top1_acc | top5_acc |
-|------|--------------|---------------|----------|----------|
-| 42   | Baseline     | CIFAR-10      | 92.1     | 96.5     |
-| 42   | DualConv-only| CIFAR-10      | 92.4     | 96.8     |
-
-Optional columns: `metrics_source`, `curves_source` (otherwise the app sets **CSV upload**).
-
-**`df_efficiency.csv`** (one row per variant)
-
-| variant       | params_M | flops_M | size_mb | latency_ms |
-|---------------|----------|---------|---------|------------|
-| Baseline      | 3.40     | 300.0   | 13.0    | 8.2        |
-| DualConv-only | 3.51     | 309.0   | 13.4    | 8.9        |
-
-Optional: `metrics_json_from` (otherwise **CSV upload**).
-
-**`df_curves.csv`**
-
-| variant | dataset  | seed | epoch | train_loss | val_loss | val_top1 |
-|---------|----------|------|-------|------------|----------|----------|
-| Baseline| CIFAR-10 | 42   | 1     | 4.5        | 4.4      | 0.5      |
-
-Optional: `curves_source` per row (otherwise **CSV upload**).
-
-Use **Reset to placeholder + disk merge** to restore the default merge of disk artifacts and synthetic Tiny-ImageNet.
-
 ## Quick Start
 
 ```bash
