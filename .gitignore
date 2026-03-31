@@ -38,3 +38,8 @@ data/*.tar.gz
 artifacts/
 conversation_compact.md
 
+# Trained models (large artifacts)
+Trained Models v1/
+Trained Models v2/
+Trained Models v3/
+
