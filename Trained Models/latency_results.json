@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "device": "cpu",
+    "git_commit": "77c637004a4114118aba3170d63afd562fdcef12",
+    "platform": "macOS-15.2-arm64-arm-64bit-Mach-O",
+    "python": "3.13.5",
+    "pytorch": "2.9.1",
+    "timestamp_utc": "2026-04-01T06:56:24+00:00"
+  },
+  "results": [
+    {
+      "batch_size": 1,
+      "dataset": "cifar10",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 16.226298334986495,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/baseline/seed_42",
+      "seed": "seed_42",
+      "status": "ok",
+      "variant": "baseline",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar10",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 11.420206250004412,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/dualconv/seed_123",
+      "seed": "seed_123",
+      "status": "ok",
+      "variant": "dualconv",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar10",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 16.333629164982995,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/eca/seed_3407",
+      "seed": "seed_3407",
+      "status": "ok",
+      "variant": "eca",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar10",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 11.423340830006055,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/hybrid/seed_42",
+      "seed": "seed_42",
+      "status": "ok",
+      "variant": "hybrid",
+      "warmup": 50
+    }
+  ],
+  "settings": {
+    "batch_size": 1,
+    "dataset_choice": "auto",
+    "dtype": "fp32",
+    "iters": 200,
+    "selected_dataset": "cifar10",
+    "trained_root": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models",
+    "variants": [
+      "baseline",
+      "dualconv",
+      "eca",
+      "hybrid"
+    ],
+    "warmup": 50
+  }
+}
