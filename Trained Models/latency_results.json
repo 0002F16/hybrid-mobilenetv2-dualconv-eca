@@ -5,7 +5,7 @@
     "platform": "macOS-15.2-arm64-arm-64bit-Mach-O",
     "python": "3.13.5",
     "pytorch": "2.9.1",
-    "timestamp_utc": "2026-04-01T06:56:24+00:00"
+    "timestamp_utc": "2026-04-01T07:01:49+00:00"
   },
   "results": [
     {
@@ -18,7 +18,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 16.226298334986495,
+      "latency_ms_per_image": 16.083514999991166,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/baseline/seed_42",
       "seed": "seed_42",
       "status": "ok",
@@ -35,7 +35,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 11.420206250004412,
+      "latency_ms_per_image": 13.105458334975992,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/dualconv/seed_123",
       "seed": "seed_123",
       "status": "ok",
@@ -52,7 +52,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 16.333629164982995,
+      "latency_ms_per_image": 18.96218375000899,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/eca/seed_3407",
       "seed": "seed_3407",
       "status": "ok",
@@ -69,7 +69,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 11.423340830006055,
+      "latency_ms_per_image": 12.337108124993392,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/hybrid/seed_42",
       "seed": "seed_42",
       "status": "ok",
