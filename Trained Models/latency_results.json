@@ -1,11 +1,11 @@
 {
   "meta": {
     "device": "cpu",
-    "git_commit": "77c637004a4114118aba3170d63afd562fdcef12",
+    "git_commit": "cdb93602c7e6a65d950c0f209c89d3d38549a932",
     "platform": "macOS-15.2-arm64-arm-64bit-Mach-O",
     "python": "3.13.5",
     "pytorch": "2.9.1",
-    "timestamp_utc": "2026-04-01T07:01:49+00:00"
+    "timestamp_utc": "2026-04-01T07:15:22+00:00"
   },
   "results": [
     {
@@ -18,7 +18,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 16.083514999991166,
+      "latency_ms_per_image": 17.021256670013827,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/baseline/seed_42",
       "seed": "seed_42",
       "status": "ok",
@@ -35,7 +35,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 13.105458334975992,
+      "latency_ms_per_image": 12.17017457998736,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/dualconv/seed_123",
       "seed": "seed_123",
       "status": "ok",
@@ -52,7 +52,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 18.96218375000899,
+      "latency_ms_per_image": 23.32568521000212,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/eca/seed_3407",
       "seed": "seed_3407",
       "status": "ok",
@@ -69,7 +69,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 12.337108124993392,
+      "latency_ms_per_image": 17.163198749985895,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/hybrid/seed_42",
       "seed": "seed_42",
       "status": "ok",

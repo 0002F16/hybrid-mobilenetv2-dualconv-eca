@@ -35,6 +35,29 @@ from utils.profiling import measure_latency
 Variant = Literal["baseline", "dualconv", "eca", "hybrid"]
 
 
+class _ProgressBar:
+    def __init__(self, *, total: int, width: int = 28, enabled: bool = True) -> None:
+        self.total = max(int(total), 1)
+        self.width = max(int(width), 10)
+        self.enabled = bool(enabled)
+        self.current = 0
+
+    def update(self, *, current: int, label: str) -> None:
+        if not self.enabled:
+            return
+        self.current = max(0, min(int(current), self.total))
+        done = int(round(self.width * (self.current / self.total)))
+        bar = ("█" * done) + ("░" * (self.width - done))
+        msg = f"[{bar}] {self.current}/{self.total} {label}"
+        # Overwrite the same line; final newline is printed via finish().
+        print("\r" + msg, end="", flush=True)
+
+    def finish(self) -> None:
+        if not self.enabled:
+            return
+        print("", flush=True)
+
+
 @dataclass(frozen=True)
 class RunCandidate:
     dataset: str
@@ -264,6 +287,7 @@ def run_latency_benchmark(
     iters: int,
     batch_size: int,
     latency_fn: Callable[..., float] = measure_latency,
+    show_progress: bool = True,
 ) -> dict[str, Any]:
     candidates = discover_run_candidates(trained_root)
     dataset = choose_dataset_for_one_per_variant(candidates, requested=dataset_choice)
@@ -271,7 +295,9 @@ def run_latency_benchmark(
     selected = select_best_seed_per_variant(candidates, dataset=dataset or "", variants=variants)
 
     results: list[dict[str, Any]] = []
-    for variant in variants:
+    progress = _ProgressBar(total=len(variants), enabled=bool(show_progress) and sys.stdout.isatty())
+    for idx, variant in enumerate(variants, start=1):
+        progress.update(current=idx - 1, label=f"{variant}…")
         cand = selected.get(variant)
         if cand is None:
             results.append(
@@ -347,6 +373,8 @@ def run_latency_benchmark(
             entry.update({"status": "error", "reason": f"Latency measurement failed: {e}"})
 
         results.append(entry)
+        progress.update(current=idx, label=f"{variant} done")
+    progress.finish()
 
     payload = {
         "meta": collect_env_meta(device),
@@ -395,6 +423,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--warmup", type=int, default=50, help="Warm-up iterations.")
     p.add_argument("--iters", type=int, default=200, help="Timed iterations.")
     p.add_argument("--batch_size", type=int, default=1, help="Batch size (thesis uses 1).")
+    p.add_argument(
+        "--no_progress",
+        action="store_true",
+        help="Disable terminal progress bar output.",
+    )
     return p.parse_args(argv)
 
 
@@ -409,6 +442,7 @@ def main(argv: list[str] | None = None) -> int:
         warmup=int(args.warmup),
         iters=int(args.iters),
         batch_size=int(args.batch_size),
+        show_progress=not bool(args.no_progress),
     )
     out_path = Path(args.output_json)
     out_path.parent.mkdir(parents=True, exist_ok=True)
