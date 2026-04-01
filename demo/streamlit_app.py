@@ -41,6 +41,11 @@ def _default_trained_root() -> Path:
     return repo_root() / "Trained Models"
 
 
+def _default_tiny_imagenet_root() -> Path:
+    # Keep this aligned with `.gitignore` and common local layouts.
+    return repo_root() / "data" / "tiny-imagenet-200"
+
+
 def main() -> None:
     st.set_page_config(page_title="Trained model demo", layout="centered")
     st.title("Image classification demo")
@@ -63,7 +68,7 @@ def main() -> None:
     )
     tiny_root_str = sidebar.text_input(
         "Tiny ImageNet root (optional, for class names)",
-        value="",
+        value=str(_default_tiny_imagenet_root()) if _default_tiny_imagenet_root().is_dir() else "",
         help="Path to tiny-imagenet-200 (must contain train/ with class folders). Leave empty to show class indices.",
     )
     tiny_imagenet_root = Path(tiny_root_str).resolve() if tiny_root_str.strip() else None

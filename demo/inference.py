@@ -227,6 +227,26 @@ def get_tiny_imagenet_class_names(*, dataset_root: Path) -> list[str] | None:
     return sorted([p.name for p in train_dir.iterdir() if p.is_dir()])
 
 
+@functools.lru_cache(maxsize=2)
+def _tiny_imagenet_label_tuple_from_json(*, labels_json_path: str) -> tuple[str, ...] | None:
+    """
+    Read `demo/tiny_imagenet_labels.json` which stores a 200-length list of label strings
+    aligned with the repo's Tiny-ImageNet training class index convention.
+    """
+    p = Path(labels_json_path)
+    if not p.is_file():
+        return None
+    try:
+        payload = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, list) or not payload:
+        return None
+    if not all(isinstance(x, str) for x in payload):
+        return None
+    return tuple(payload)
+
+
 def resolve_label(
     class_idx: int,
     *,
@@ -250,4 +270,10 @@ def resolve_label(
             names = get_tiny_imagenet_class_names(dataset_root=tiny_imagenet_root)
             if names is not None and 0 <= class_idx < len(names):
                 return names[class_idx]
+        # Fallback: use bundled label strings even without the dataset folder.
+        labels = _tiny_imagenet_label_tuple_from_json(
+            labels_json_path=str(repo_root() / "demo" / "tiny_imagenet_labels.json")
+        )
+        if labels is not None and 0 <= class_idx < len(labels):
+            return labels[class_idx]
     return f"class {class_idx}"
