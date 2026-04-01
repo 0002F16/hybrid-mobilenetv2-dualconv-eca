@@ -144,6 +144,24 @@ def choose_dataset_for_one_per_variant(candidates: list[RunCandidate], *, reques
     return best
 
 
+def _datasets_present(candidates: list[RunCandidate]) -> list[str]:
+    ds = sorted({c.dataset for c in candidates})
+    return ds
+
+
+def resolve_datasets_to_benchmark(candidates: list[RunCandidate], *, dataset_choice: str) -> list[str]:
+    """
+    dataset_choice:
+      - 'all' or 'auto': benchmark all datasets present under trained_root
+      - otherwise: benchmark the specific dataset name (if present)
+    """
+    choice = str(dataset_choice).lower().strip()
+    present = _datasets_present(candidates)
+    if choice in {"all", "auto"}:
+        return present
+    return [choice] if choice in set(present) else [choice]
+
+
 def _score_from_metrics(metrics: dict[str, Any]) -> tuple[float, float]:
     """
     Higher is better score tuple for sorting.
@@ -290,90 +308,99 @@ def run_latency_benchmark(
     show_progress: bool = True,
 ) -> dict[str, Any]:
     candidates = discover_run_candidates(trained_root)
-    dataset = choose_dataset_for_one_per_variant(candidates, requested=dataset_choice)
     variants = ("baseline", "dualconv", "eca", "hybrid")
-    selected = select_best_seed_per_variant(candidates, dataset=dataset or "", variants=variants)
+    datasets = resolve_datasets_to_benchmark(candidates, dataset_choice=dataset_choice)
 
     results: list[dict[str, Any]] = []
-    progress = _ProgressBar(total=len(variants), enabled=bool(show_progress) and sys.stdout.isatty())
-    for idx, variant in enumerate(variants, start=1):
-        progress.update(current=idx - 1, label=f"{variant}…")
-        cand = selected.get(variant)
-        if cand is None:
-            results.append(
-                {
-                    "dataset": dataset,
-                    "variant": variant,
-                    "status": "missing_run",
-                    "reason": "No run candidate found (missing metrics.json or logs/config.json).",
-                }
-            )
-            continue
+    progress = _ProgressBar(
+        total=max(1, len(datasets) * len(variants)),
+        enabled=bool(show_progress) and sys.stdout.isatty(),
+    )
+    step = 0
+    for dataset in datasets:
+        selected = select_best_seed_per_variant(candidates, dataset=dataset or "", variants=variants)
+        for variant in variants:
+            step += 1
+            progress.update(current=step - 1, label=f"{dataset}/{variant}…")
+            cand = selected.get(variant)
+            if cand is None:
+                results.append(
+                    {
+                        "dataset": dataset,
+                        "variant": variant,
+                        "status": "missing_run",
+                        "reason": "No run candidate found (missing metrics.json or logs/config.json).",
+                    }
+                )
+                continue
 
-        entry: dict[str, Any] = {
-            "dataset": cand.dataset,
-            "variant": cand.variant,
-            "seed": cand.seed_dir,
-            "run_dir": str(cand.run_dir),
-        }
+            entry: dict[str, Any] = {
+                "dataset": cand.dataset,
+                "variant": cand.variant,
+                "seed": cand.seed_dir,
+                "run_dir": str(cand.run_dir),
+            }
 
-        if not cand.checkpoint_path.is_file():
-            entry.update(
-                {
-                    "status": "skipped",
-                    "reason": f"Missing checkpoint: {cand.checkpoint_path}",
-                }
-            )
+            if not cand.checkpoint_path.is_file():
+                entry.update(
+                    {
+                        "status": "skipped",
+                        "reason": f"Missing checkpoint: {cand.checkpoint_path}",
+                    }
+                )
+                results.append(entry)
+                progress.update(current=step, label=f"{dataset}/{variant} skipped")
+                continue
+
+            try:
+                cfg = _read_json(cand.config_path)
+            except Exception as e:
+                entry.update({"status": "skipped", "reason": f"Failed to read config.json: {e}"})
+                results.append(entry)
+                progress.update(current=step, label=f"{dataset}/{variant} skipped")
+                continue
+
+            input_size_chw = _input_size_chw_for_run(cand)
+            entry["input_size_chw"] = list(input_size_chw)
+            entry["batch_size"] = int(batch_size)
+            entry["warmup"] = int(warmup)
+            entry["iters"] = int(iters)
+            entry["dtype"] = "fp32"
+
+            try:
+                model = build_model(cfg).to(device)
+                ckpt = torch.load(cand.checkpoint_path, map_location=device, weights_only=True)
+                state = ckpt.get("model_state_dict", ckpt) if isinstance(ckpt, dict) else ckpt
+                if not isinstance(state, dict):
+                    raise RuntimeError("Unexpected checkpoint format (expected dict with model_state_dict).")
+                model.load_state_dict(state, strict=True)
+                model.eval()
+            except Exception as e:
+                entry.update({"status": "skipped", "reason": f"Failed to load model/checkpoint: {e}"})
+                results.append(entry)
+                progress.update(current=step, label=f"{dataset}/{variant} skipped")
+                continue
+
+            try:
+                latency_ms = latency_fn(
+                    model=model,
+                    input_size=input_size_chw,
+                    device=device,
+                    warmup=int(warmup),
+                    iters=int(iters),
+                    batch_size=int(batch_size),
+                )
+                entry.update(
+                    {
+                        "status": "ok",
+                        "latency_ms_per_image": float(latency_ms),
+                    }
+                )
+            except Exception as e:
+                entry.update({"status": "error", "reason": f"Latency measurement failed: {e}"})
+
             results.append(entry)
-            continue
-
-        try:
-            cfg = _read_json(cand.config_path)
-        except Exception as e:
-            entry.update({"status": "skipped", "reason": f"Failed to read config.json: {e}"})
-            results.append(entry)
-            continue
-
-        input_size_chw = _input_size_chw_for_run(cand)
-        entry["input_size_chw"] = list(input_size_chw)
-        entry["batch_size"] = int(batch_size)
-        entry["warmup"] = int(warmup)
-        entry["iters"] = int(iters)
-        entry["dtype"] = "fp32"
-
-        try:
-            model = build_model(cfg).to(device)
-            ckpt = torch.load(cand.checkpoint_path, map_location=device, weights_only=True)
-            state = ckpt.get("model_state_dict", ckpt) if isinstance(ckpt, dict) else ckpt
-            if not isinstance(state, dict):
-                raise RuntimeError("Unexpected checkpoint format (expected dict with model_state_dict).")
-            model.load_state_dict(state, strict=True)
-            model.eval()
-        except Exception as e:
-            entry.update({"status": "skipped", "reason": f"Failed to load model/checkpoint: {e}"})
-            results.append(entry)
-            continue
-
-        try:
-            latency_ms = latency_fn(
-                model=model,
-                input_size=input_size_chw,
-                device=device,
-                warmup=int(warmup),
-                iters=int(iters),
-                batch_size=int(batch_size),
-            )
-            entry.update(
-                {
-                    "status": "ok",
-                    "latency_ms_per_image": float(latency_ms),
-                }
-            )
-        except Exception as e:
-            entry.update({"status": "error", "reason": f"Latency measurement failed: {e}"})
-
-        results.append(entry)
-        progress.update(current=idx, label=f"{variant} done")
+            progress.update(current=step, label=f"{dataset}/{variant} done")
     progress.finish()
 
     payload = {
@@ -381,7 +408,7 @@ def run_latency_benchmark(
         "settings": {
             "trained_root": str(Path(trained_root).resolve()),
             "dataset_choice": dataset_choice,
-            "selected_dataset": dataset,
+            "datasets_benchmarked": datasets,
             "variants": list(variants),
             "dtype": "fp32",
             "batch_size": int(batch_size),
@@ -411,7 +438,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--dataset",
         type=str,
         default="auto",
-        help="Dataset to benchmark (e.g. cifar100, tiny_imagenet). Use 'auto' to pick one.",
+        help="Dataset to benchmark (e.g. cifar100, tiny_imagenet). Use 'auto' or 'all' to benchmark all datasets present.",
     )
     p.add_argument(
         "--device",
@@ -453,7 +480,9 @@ def main(argv: list[str] | None = None) -> int:
     skipped = [r for r in payload["results"] if r.get("status") == "skipped"]
     errors = [r for r in payload["results"] if r.get("status") == "error"]
     print(f"Wrote: {out_path}")
-    print(f"Selected dataset: {payload['settings'].get('selected_dataset')}")
+    ds_list = payload["settings"].get("datasets_benchmarked")
+    if isinstance(ds_list, list):
+        print(f"Datasets benchmarked: {', '.join(str(x) for x in ds_list)}")
     print(f"ok={len(ok)} skipped={len(skipped)} error={len(errors)}")
     return 0 if not errors else 2
 

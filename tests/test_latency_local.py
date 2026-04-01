@@ -82,7 +82,7 @@ def test_local_latency_benchmark_writes_json(tmp_path: Path, monkeypatch: pytest
 
     payload = latency_mod.run_latency_benchmark(
         trained_root=trained_root,
-        dataset_choice="auto",
+        dataset_choice=dataset,
         device=torch.device("cpu"),
         warmup=50,
         iters=200,

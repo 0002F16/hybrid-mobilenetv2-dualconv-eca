@@ -1,11 +1,11 @@
 {
   "meta": {
     "device": "cpu",
-    "git_commit": "cdb93602c7e6a65d950c0f209c89d3d38549a932",
+    "git_commit": "de82e349d5802787baf4a0d4f9c315cb6069ed08",
     "platform": "macOS-15.2-arm64-arm-64bit-Mach-O",
     "python": "3.13.5",
     "pytorch": "2.9.1",
-    "timestamp_utc": "2026-04-01T07:15:22+00:00"
+    "timestamp_utc": "2026-04-01T09:58:33+00:00"
   },
   "results": [
     {
@@ -18,7 +18,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 17.021256670013827,
+      "latency_ms_per_image": 23.004249164987414,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/baseline/seed_42",
       "seed": "seed_42",
       "status": "ok",
@@ -35,7 +35,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 12.17017457998736,
+      "latency_ms_per_image": 13.210002500018163,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/dualconv/seed_123",
       "seed": "seed_123",
       "status": "ok",
@@ -52,7 +52,7 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 23.32568521000212,
+      "latency_ms_per_image": 17.68739645500318,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/eca/seed_3407",
       "seed": "seed_3407",
       "status": "ok",
@@ -69,9 +69,145 @@
         32
       ],
       "iters": 200,
-      "latency_ms_per_image": 17.163198749985895,
+      "latency_ms_per_image": 15.361452084980556,
       "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar10/hybrid/seed_42",
       "seed": "seed_42",
+      "status": "ok",
+      "variant": "hybrid",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar100",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 17.65137833499466,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar100/baseline/seed_2024",
+      "seed": "seed_2024",
+      "status": "ok",
+      "variant": "baseline",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar100",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 11.029254579989356,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar100/dualconv/seed_777",
+      "seed": "seed_777",
+      "status": "ok",
+      "variant": "dualconv",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar100",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 22.03985937499965,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar100/eca/seed_123",
+      "seed": "seed_123",
+      "status": "ok",
+      "variant": "eca",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "cifar100",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        32,
+        32
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 15.788800624977739,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/cifar100/hybrid/seed_3407",
+      "seed": "seed_3407",
+      "status": "ok",
+      "variant": "hybrid",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "tiny_imagenet",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        64,
+        64
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 18.13063395999052,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/tiny_imagenet/baseline/seed_123",
+      "seed": "seed_123",
+      "status": "ok",
+      "variant": "baseline",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "tiny_imagenet",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        64,
+        64
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 12.678490210018936,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/tiny_imagenet/dualconv/seed_42",
+      "seed": "seed_42",
+      "status": "ok",
+      "variant": "dualconv",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "tiny_imagenet",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        64,
+        64
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 18.15893250000954,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/tiny_imagenet/eca/seed_123",
+      "seed": "seed_123",
+      "status": "ok",
+      "variant": "eca",
+      "warmup": 50
+    },
+    {
+      "batch_size": 1,
+      "dataset": "tiny_imagenet",
+      "dtype": "fp32",
+      "input_size_chw": [
+        3,
+        64,
+        64
+      ],
+      "iters": 200,
+      "latency_ms_per_image": 14.78330312500475,
+      "run_dir": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models/tiny_imagenet/hybrid/seed_123",
+      "seed": "seed_123",
       "status": "ok",
       "variant": "hybrid",
       "warmup": 50
@@ -80,9 +216,13 @@
   "settings": {
     "batch_size": 1,
     "dataset_choice": "auto",
+    "datasets_benchmarked": [
+      "cifar10",
+      "cifar100",
+      "tiny_imagenet"
+    ],
     "dtype": "fp32",
     "iters": 200,
-    "selected_dataset": "cifar10",
     "trained_root": "/Users/macbookm1/Documents/hybrid-mobilenetv2-dualconv-eca/Trained Models",
     "variants": [
       "baseline",
