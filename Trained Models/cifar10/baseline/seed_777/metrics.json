@@ -1,0 +1,29 @@
+{
+  "best_val": {
+    "epoch": 41,
+    "val_acc": 0.6642,
+    "val_loss": 1.2908374495506287
+  },
+  "dataset": "cifar10",
+  "model": "baseline",
+  "model_profile": {
+    "flops": 25556736,
+    "flops_method": "fvcore",
+    "input_size_chw": [
+      3,
+      32,
+      32
+    ],
+    "macs": 12778368,
+    "params": 2236682,
+    "size_mb": 8.764354
+  },
+  "seed": 777,
+  "stopped_epoch": 75,
+  "test": {
+    "acc": 0.6609,
+    "loss": 1.290959679031372,
+    "top1_pp": 66.09,
+    "top5_pp": 96.92
+  }
+}

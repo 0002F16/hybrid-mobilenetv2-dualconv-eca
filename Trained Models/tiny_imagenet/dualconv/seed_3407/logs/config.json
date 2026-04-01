@@ -1,0 +1,32 @@
+{
+  "batch_size": 128,
+  "cutmix_alpha": 1.0,
+  "dataset": "tiny_imagenet",
+  "dataset_root": "/content/data/tiny_imagenet/tiny-imagenet-200",
+  "early_stopping": {
+    "enabled": true,
+    "min_delta_pp": 0.1,
+    "patience_epochs": 40,
+    "warmup_epochs": 60
+  },
+  "epochs": 200,
+  "label_smoothing": 0.1,
+  "learning_rate": 0.2,
+  "lr_warmup_epochs": 5,
+  "mix_prob": 1.0,
+  "mixup_alpha": 1.0,
+  "model": "dualconv",
+  "momentum": 0.9,
+  "num_classes": 200,
+  "num_workers": 4,
+  "randaugment_magnitude": 9,
+  "randaugment_num_ops": 2,
+  "random_erasing_p": 0.25,
+  "scheduler": "cosine",
+  "seed": 3407,
+  "split_seed": 1337,
+  "summary_log_interval_epochs": 10,
+  "val_interval_epochs": 1,
+  "weight_decay": 0.0005,
+  "width_multiplier": 1.0
+}

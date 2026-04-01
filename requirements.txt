@@ -9,3 +9,6 @@ pytest==8.3.3
 # Profiling (thesis 3.7.3: FLOPs via fvcore; thop optional fallback)
 fvcore==0.1.5.post20221221
 thop==0.1.1.post2209072238
+
+# Demo: streamlit run demo/streamlit_app.py
+streamlit>=1.40.0

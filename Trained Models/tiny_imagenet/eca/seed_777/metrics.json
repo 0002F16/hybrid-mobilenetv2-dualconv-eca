@@ -1,0 +1,29 @@
+{
+  "best_val": {
+    "epoch": 196,
+    "val_acc": 0.3185,
+    "val_loss": 3.4097590114593506
+  },
+  "dataset": "tiny_imagenet",
+  "model": "eca",
+  "model_profile": {
+    "flops": 25811744,
+    "flops_method": "fvcore",
+    "input_size_chw": [
+      3,
+      64,
+      64
+    ],
+    "macs": 12905872,
+    "params": 2480101,
+    "size_mb": 9.695825
+  },
+  "seed": 777,
+  "stopped_epoch": null,
+  "test": {
+    "acc": 0.3138,
+    "loss": 3.415572050476074,
+    "top1_pp": 31.380000000000003,
+    "top5_pp": 58.76
+  }
+}
