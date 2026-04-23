@@ -8,10 +8,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-from torchvision.datasets import ImageFolder
+from torch.utils.data import DataLoader, Subset
+from torchvision.datasets import CIFAR10, ImageFolder
 from torchvision import transforms
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -20,7 +21,6 @@ import sys
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from data.preprocessing import compute_train_split_mean_std
 from models.factory import build_model
 
 
@@ -109,6 +109,89 @@ def evaluate_with_details(
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _make_train_val_split_indices(n: int, val_fraction: float, split_seed: int) -> tuple[list[int], list[int]]:
+    if not (0.0 < val_fraction < 1.0):
+        raise ValueError(f"val_fraction must be in (0,1), got {val_fraction}")
+    n_val = int(round(val_fraction * n))
+    n_val = max(1, min(n - 1, n_val))
+    rng = np.random.default_rng(int(split_seed))
+    perm = rng.permutation(n).tolist()
+    val_indices = perm[:n_val]
+    train_indices = perm[n_val:]
+    return train_indices, val_indices
+
+
+@torch.no_grad()
+def _compute_mean_std_from_cifar10_train_split(
+    *,
+    data_root: Path,
+    split_seed: int,
+    batch_size: int = 256,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
+    full_train = CIFAR10(root=str(data_root), train=True, download=True, transform=transforms.ToTensor())
+    train_indices, _val_indices = _make_train_val_split_indices(
+        n=len(full_train),
+        val_fraction=0.1,
+        split_seed=int(split_seed),
+    )
+    train_subset = Subset(full_train, train_indices)
+    loader = DataLoader(
+        train_subset,
+        batch_size=min(int(batch_size), 256),
+        shuffle=False,
+        num_workers=0,
+        pin_memory=False,
+    )
+
+    n_pixels = 0
+    channel_sum = torch.zeros(3, dtype=torch.float64)
+    channel_sumsq = torch.zeros(3, dtype=torch.float64)
+
+    for x, _y in loader:
+        x = x.to(dtype=torch.float64)
+        n = x.shape[0] * x.shape[2] * x.shape[3]
+        n_pixels += int(n)
+        channel_sum += x.sum(dim=(0, 2, 3))
+        channel_sumsq += (x * x).sum(dim=(0, 2, 3))
+
+    mean = channel_sum / n_pixels
+    var = (channel_sumsq / n_pixels) - (mean * mean)
+    std = torch.sqrt(torch.clamp(var, min=0.0))
+    return (
+        (float(mean[0]), float(mean[1]), float(mean[2])),
+        (float(std[0]), float(std[1]), float(std[2])),
+    )
+
+
+def _load_cifar10_normalization(
+    *,
+    official_data_root: Path,
+    split_seed: int = 1337,
+    batch_size: int = 256,
+) -> tuple[tuple[float, float, float], tuple[float, float, float], str]:
+    try:
+        from data.preprocessing import compute_train_split_mean_std as helper  # type: ignore
+
+        mean, std = helper(
+            "cifar10",
+            data_root=official_data_root,
+            split_seed=split_seed,
+            batch_size=batch_size,
+        )
+        return mean, std, "helper:data.preprocessing.compute_train_split_mean_std"
+    except Exception as exc:
+        print(
+            "[warn] Falling back to in-script CIFAR-10 train-split mean/std computation "
+            f"because data.preprocessing helper import/use failed: {exc}"
+        )
+        mean, std = _compute_mean_std_from_cifar10_train_split(
+            data_root=official_data_root,
+            split_seed=split_seed,
+            batch_size=batch_size,
+        )
+        return mean, std, "fallback:in_script_cifar10_train_split_mean_std"
 
 
 def _device_from_arg(name: str) -> torch.device:
@@ -218,9 +301,8 @@ def main() -> None:
 
     device = _device_from_arg(args.device)
 
-    mean, std = compute_train_split_mean_std(
-        "cifar10",
-        data_root=official_data_root,
+    mean, std, normalization_source = _load_cifar10_normalization(
+        official_data_root=official_data_root,
         split_seed=1337,
         batch_size=256,
     )
@@ -355,7 +437,8 @@ def main() -> None:
             ),
         },
         "normalization": {
-            "source": "official CIFAR-10 training split mean/std (split_seed=1337)",
+            "source": normalization_source,
+            "notes": "Official CIFAR-10 training split mean/std with split_seed=1337; falls back to in-script computation if the preprocessing helper is unavailable.",
             "mean": [round(float(x), 8) for x in mean],
             "std": [round(float(x), 8) for x in std],
         },
